@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<data>
+    <config_reseau_initiale>
+        <nbr_entrees>2</nbr_entrees>
+        <nbr_sorties>1</nbr_sorties>
+        <nbr_caches>3</nbr_caches>
+        <type_connexion>
+            <partielle frac="0.6"/>
+        </type_connexion>
+        <distribution_poids>
+            <gauss sigma="0.6"/>
+        </distribution_poids>
+    </config_reseau_initiale>
+    <fonctions_activation>
+        <sigmoid/>
+        <tanh/>
+    </fonctions_activation>
+</data>

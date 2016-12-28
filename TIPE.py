@@ -1,7 +1,8 @@
-# Ce fichier gère le programme de simulation dans son ensemble, en lançant le jeu et en contrôlant l'AI
+# Ce fichier gere le programme de simulation dans son ensemble, en lancant le jeu et en controlant l'AI
 
 import tkinter as tk
 import Jeu.puzzle as pzl
+
 
 class Demo1:
     def __init__(self, master):
@@ -12,17 +13,17 @@ class Demo1:
         f1 = tk.Frame(self.master)
         f1.pack(side=tk.LEFT)
 
-        l1 = tk.LabelFrame(f1, text="Commandes générales", padx=20, pady=20)
+        l1 = tk.LabelFrame(f1, text="Commandes generales", padx=20, pady=20)
         l1.pack(fill="both", expand="yes")
 
-        l2 = tk.LabelFrame(f1, text="Contrôles de l'AI", padx=20, pady=20)
+        l2 = tk.LabelFrame(f1, text="Controles de l'AI", padx=20, pady=20)
         l2.pack(fill="both", expand="yes")
 
         l3 = tk.LabelFrame(self.master, text="Statistiques", padx=20, pady=20)
         l3.pack(fill="both", expand="yes", side=tk.LEFT)
 
-        tk.Label(l2, text="A l'intérieure de la frame 2").pack()
-        tk.Label(l3, text="A l'intérieure de la frame 3").pack()
+        tk.Label(l2, text="A l'interieure de la frame 2").pack()
+        tk.Label(l3, text="A l'interieure de la frame 3").pack()
 
         self.bouton_simulation = tk.Button(l1, text='Lancer la simulation', width=20)
         self.bouton_simulation.pack()
