@@ -41,6 +41,28 @@ class Config:
                 self.fonctions_activation.add('sigmoid', FA.sigmoid_activation)
             elif x.tag == 'tanh':
                 self.fonctions_activation.add('tanh', FA.tanh_activation)
+            elif x.tag == 'sin':
+                self.fonctions_activation.add('tanh', FA.sin_activation)
+            elif x.tag == 'gauss':
+                self.fonctions_activation.add('tanh', FA.gauss_activation)
+            elif x.tag == 'relu':
+                self.fonctions_activation.add('tanh', FA.relu_activation)
+            elif x.tag == 'identity':
+                self.fonctions_activation.add('tanh', FA.identity_activation)
+            elif x.tag == 'inv':
+                self.fonctions_activation.add('tanh', FA.inv_activation)
+            elif x.tag == 'log':
+                self.fonctions_activation.add('tanh', FA.log_activation)
+            elif x.tag == 'exp':
+                self.fonctions_activation.add('tanh', FA.exp_activation)
+            elif x.tag == 'abs':
+                self.fonctions_activation.add('tanh', FA.abs_activation)
+            elif x.tag == 'hat':
+                self.fonctions_activation.add('tanh', FA.hat_activation)
+            elif x.tag == 'square':
+                self.fonctions_activation.add('tanh', FA.square_activation)
+            elif x.tag == 'cube':
+                self.fonctions_activation.add('tanh', FA.cube_activation)
 
 
     def __str__(self):
