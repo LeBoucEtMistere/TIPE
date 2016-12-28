@@ -15,11 +15,11 @@ class Reseau(object):
         for i, v in zip(self.noeuds_entree, entrees):
             self.valeurs[i] = v
 
-        for noeud, fonc, liens in self.noeud_eval:
+        for noeud, fonc, biais, facteur, entrees in self.noeud_eval:
             s = 0.0
-            for i, w in liens:
+            for i, w in entrees:
                 s += self.valeurs[i] * w
-            self.valeurs[noeud] = fonc(s)
+            self.valeurs[noeud] = fonc(biais + facteur * s)
 
         return [self.valeurs[i] for i in self.noeuds_sortie]
 
@@ -70,8 +70,7 @@ def creer_phenotype(genome):
 
             noeuds_utilises.add(noeud)
             ng = genome.noeuds[noeud]
-            fonction_activation = ng.activation
-            noeuds_eval.append((noeud, fonction_activation, entrees))
+            noeuds_eval.append((noeud, ng.activation, ng.biais, ng.facteur, entrees))
 
     return Reseau(max(noeuds_utilises), noeuds_entree, noeuds_sortie, noeuds_eval)
 

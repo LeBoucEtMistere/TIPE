@@ -11,16 +11,16 @@ class Noeud(object):
     activation : la fonction d'activation du noeud
 
     """
-    def __init__(self, ID, type, activation=FonctionsActivation.sigmoid_activation):
-        self.ID = ID
-
+    def __init__(self, ID, type, biais=0.0, facteur=4.924273, activation=FonctionsActivation.sigmoid_activation):
         assert type in ('ENTREE', 'SORTIE', 'CACHE')
-
+        self.ID = ID
         self.type = type
+        self.biais = biais
+        self.facteur = facteur
         self.activation = activation
 
     def __str__(self):
-        return 'Noeud(id={0}, type={1}, activation={2})'.format(self.ID, self.type, self.activation)
+        return 'Noeud(id={0}, type={1}, biais={2}, facteur={3} activation={4})'.format(self.ID, self.type, self.biais, self.facteur, self.activation)
 
 
 class Connexion(object):

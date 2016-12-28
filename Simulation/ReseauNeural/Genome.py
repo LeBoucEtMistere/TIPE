@@ -25,13 +25,13 @@ class Genome(object):
 
     def ajouter_noeud_cache(self):
         nouvel_id = self.nouvel_id_cache()
-        self.noeuds[nouvel_id] = Gene.Noeud(nouvel_id, 'CACHE', self.config.fonctions_activation.get_aleatoire())
+        self.noeuds[nouvel_id] = Gene.Noeud(nouvel_id, 'CACHE', activation=self.config.fonctions_activation.get_aleatoire())
         self.nbr_caches += 1
 
     def ajouter_noeuds_caches(self, nbr):
         id_noeud = self.nouvel_id_cache()
         for i in range(nbr):
-            noeud = Gene.Noeud(id_noeud, 'CACHE', self.config.fonctions_activation.get_aleatoire())
+            noeud = Gene.Noeud(id_noeud, 'CACHE', activation=self.config.fonctions_activation.get_aleatoire())
             assert noeud.ID not in self.noeuds
             self.noeuds[noeud.ID] = noeud
             id_noeud += 1
@@ -93,12 +93,12 @@ class Genome(object):
         noeud_id = 0
         for i in range(c.config.cri_nbr_entrees):
             assert noeud_id not in c.noeuds
-            c.noeuds[noeud_id] = Gene.Noeud(noeud_id, 'ENTREE', c.config.fonctions_activation.get_aleatoire())
+            c.noeuds[noeud_id] = Gene.Noeud(noeud_id, 'ENTREE', activation=c.config.fonctions_activation.get_aleatoire())
             noeud_id += 1
             c.nbr_entrees += 1
 
         for i in range(c.config.cri_nbr_sorties):
-            noeud = Gene.Noeud(noeud_id, 'SORTIE', c.config.fonctions_activation.get_aleatoire())
+            noeud = Gene.Noeud(noeud_id, 'SORTIE', activation=c.config.fonctions_activation.get_aleatoire())
             assert noeud.ID not in c.noeuds
             c.noeuds[noeud.ID] = noeud
             noeud_id += 1

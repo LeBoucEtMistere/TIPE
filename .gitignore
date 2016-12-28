@@ -1,3 +1,4 @@
 .idea
 Jeu/__pycache__
 Config.pyc
+*.pyc

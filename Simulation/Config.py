@@ -64,7 +64,6 @@ class Config:
             elif x.tag == 'cube':
                 self.fonctions_activation.add('tanh', FA.cube_activation)
 
-
     def __str__(self):
         s = 'Config : \n'
         s += '- Nbr entrees : {0}, nbr sorties : {1}, nbr caches : {2} \n'.format(self.cri_nbr_entrees, self.cri_nbr_sorties, self.cri_nbr_caches)
