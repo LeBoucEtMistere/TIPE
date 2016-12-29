@@ -20,6 +20,13 @@ class Config:
 
         self.fonctions_activation = FA.FonctionActivationSet()
 
+        # Coefficents pour le calcul de distance
+
+        self.seuil_compatibilite = 0.0
+        self.coefficient_poids = 0.0
+        self.coefficient_exces = 0.0
+        self.coefficient_disjoints = 0.0
+
     def parser_config(self, chemin_fichier_config):
         tree = parse(chemin_fichier_config)
         racine = tree.getroot()
@@ -63,6 +70,14 @@ class Config:
                 self.fonctions_activation.add('tanh', FA.square_activation)
             elif x.tag == 'cube':
                 self.fonctions_activation.add('tanh', FA.cube_activation)
+
+        # compatibilite genotypes
+
+        cg = racine.find('compatibilite_genotypes')
+        self.seuil_compatibilite = float(cg.find('seuil_compatibilite').text)
+        self.coefficient_poids = float(cg.find('coeff_poids').text)
+        self.coefficient_exces = float(cg.find('coeff_exces').text)
+        self.coefficient_disjoints = float(cg.find('coeff_disjoints').text)
 
     def __str__(self):
         s = 'Config : \n'

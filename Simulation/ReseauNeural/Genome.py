@@ -1,7 +1,24 @@
 import Gene
 
-from random import shuffle, gauss
+import sys
 
+from random import shuffle, gauss
+from math import fabs
+
+# Instead of adding six as a dependency, this code was copied from the six
+# implementation, six is Copyright (c) 2010-2015 Benjamin Peterson
+if sys.version_info[0] == 3:
+    def itervalues(d, **kw):
+        return iter(d.values(**kw))
+
+    def iteritems(d, **kw):
+        return iter(d.items(**kw))
+else:
+    def itervalues(d, **kw):
+        return iter(d.itervalues(**kw))
+
+    def iteritems(d, **kw):
+        return iter(d.iteritems(**kw))
 
 class Genome(object):
 
@@ -113,6 +130,61 @@ class Genome(object):
         while nouvel_id in self.noeuds:
             nouvel_id += 1
         return nouvel_id
+
+    def distance(self, autre_genome):
+
+        if len(self.connexions) > len(autre_genome.connexions):
+            conn_genes1 = self.connexions
+            conn_genes2 = autre_genome.connexions
+
+        else:
+            conn_genes1 = autre_genome.connexions
+            conn_genes2 = self.connexions
+
+        # conn_genes1 est plus long que conn_genes2
+
+        distance = 0
+
+        if conn_genes1:  # Si il y a des connexions dans le genome 1
+
+            N = len(conn_genes1)
+            diff_poids = 0
+            en_commun = 0  # compteur utilise pour faire une moyenne
+            disjoints = 0
+            exces = 0
+
+            max_cg_genome2 = None
+            if conn_genes2:
+                max_cg_genome2 = max(itervalues(conn_genes2))
+
+            # max_cg_genome2 va nous permettre de determiner les genes en exces dans le genome 1
+
+            for k1, cg1 in iteritems(conn_genes1):
+                if k1 in conn_genes2:
+                    # genes homologue, on va mesurer la difference des poids
+                    cg2 = conn_genes2[k1]
+                    diff_poids += fabs(cg1.poids - cg2.poids)
+                    en_commun += 1
+
+                else:
+                    if max_cg_genome2 is not None and cg1 > max_cg_genome2:
+                        # on a un gene en exces
+                        exces += 1
+                    else:
+                        # on a un gene disjoint
+                        disjoints += 1
+
+            disjoints += len(conn_genes2) - en_commun
+            # on rajoute les genes disjoints dans le genome 2 (il ne peut pas y avoir de genes en exces dedans)
+
+            # on calcule la distance
+            distance += self.config.coefficient_exces * float(exces) / N
+            distance += self.config.coefficient_disjoints * float(disjoints) / N
+            if en_commun > 0:
+                distance += self.config.coefficient_poids * (diff_poids / en_commun)
+
+        return distance
+
 
     def __lt__(self, other):
         '''Classe les genomes par fitness.'''

@@ -3,7 +3,7 @@
     <config_reseau_initiale>
         <nbr_entrees>2</nbr_entrees>
         <nbr_sorties>1</nbr_sorties>
-        <nbr_caches>3</nbr_caches>
+        <nbr_caches>5</nbr_caches>
         <type_connexion>
             <partielle frac="0.6"/>
         </type_connexion>
@@ -15,4 +15,11 @@
         <sigmoid/>
         <tanh/>
     </fonctions_activation>
+
+    <compatibilite_genotypes>
+        <seuil_compatibilite>1</seuil_compatibilite>
+        <coeff_poids>0.4</coeff_poids>
+        <coeff_exces>1</coeff_exces>
+        <coeff_disjoints>1</coeff_disjoints>
+    </compatibilite_genotypes>
 </data>
