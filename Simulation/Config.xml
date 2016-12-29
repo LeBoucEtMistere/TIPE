@@ -17,7 +17,7 @@
     </fonctions_activation>
 
     <compatibilite_genotypes>
-        <seuil_compatibilite>1</seuil_compatibilite>
+        <seuil_compatibilite>0.9</seuil_compatibilite>
         <coeff_poids>0.4</coeff_poids>
         <coeff_exces>1</coeff_exces>
         <coeff_disjoints>1</coeff_disjoints>

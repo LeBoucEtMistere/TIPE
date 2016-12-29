@@ -1,20 +1,31 @@
 from ReseauNeural.Genome import Genome
-import ReseauNeural.ReseauNeural as nn
+from ReseauNeural.Espece import SetEspece
 from Config import Config
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 c = Config()
 c.parser_config("Config.xml")
 
-genomeRef = Genome.creer_connecte(0, c)
-print(genomeRef)
 
-reseau = nn.creer_phenotype(genomeRef)
-# print(reseau.activer([1, 0]))
+T = [k for k in np.arange(0.8,1.6,0.1)]
+L = [0] * len(T)
+j=0
 
-n=100
-d=0
-for i in range(1,n+1):
-    genome = Genome.creer_connecte(i, c)
-    if genomeRef.distance(genome)<= c.seuil_compatibilite :
-        d += 1
-print(str(100*d/n) + '% compatibles avec la reference')
+for k in T:
+    c.seuil_compatibilite = k
+    population = []
+    for i in range(1000):
+        population.append(Genome.creer_connecte(i, c))
+
+    s = SetEspece(c)
+    s.speciation(population)
+    L[j] = s.nbr_espece
+    j += 1
+
+plt.plot(T,L)
+plt.show()
+
+
+
