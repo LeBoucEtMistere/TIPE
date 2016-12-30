@@ -13,11 +13,24 @@
     </config_reseau_initiale>
     <fonctions_activation>
         <sigmoid/>
-        <tanh/>
     </fonctions_activation>
 
+    <parametres_genetiques>
+        <prob_muter_poids>0.460</prob_muter_poids>
+        <prob_changer_poids>0.0245</prob_changer_poids>
+        <puissance_mutation_poids>0.825</puissance_mutation_poids>
+        <poids_min>-30</poids_min>
+        <poids_max>30</poids_max>
+        <prob_changer_etat_connexion>0.0138</prob_changer_etat_connexion>
+        <prob_muter_biais>0.0509</prob_muter_biais>
+        <puissance_mutation_biais>2.093</puissance_mutation_biais>
+        <prob_muter_facteur>0.1</prob_muter_facteur>
+        <puissance_mutation_facteur>0.1</puissance_mutation_facteur>
+        <prob_muter_activation>0.0</prob_muter_activation>
+    </parametres_genetiques>
+
     <compatibilite_genotypes>
-        <seuil_compatibilite>0.9</seuil_compatibilite>
+        <seuil_compatibilite>1</seuil_compatibilite>
         <coeff_poids>0.4</coeff_poids>
         <coeff_exces>1</coeff_exces>
         <coeff_disjoints>1</coeff_disjoints>

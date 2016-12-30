@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 c = Config()
-c.parser_config("Config.xml")
+c.parser_config_xml("Config.xml")
 
 
 T = [k for k in np.arange(0.8,1.6,0.1)]

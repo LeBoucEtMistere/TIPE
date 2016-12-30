@@ -16,6 +16,20 @@ class Config:
 
         self.cri_poids = None
 
+        # Parametres genetiques
+        self.prob_muter_poids = 0
+        self.prob_changer_poids = 0
+        self.puissance_mutation_poids = 0
+        self.poids_min = 0
+        self.poids_max = 0
+        self.prob_changer_etat_connexion = 0
+
+        self.prob_muter_biais = 0
+        self.puissance_mutation_biais = 0
+        self.prob_muter_facteur = 0
+        self.puissance_mutation_facteur = 0
+        self.prob_muter_activation = 0
+
         # Fonctions Activation
 
         self.fonctions_activation = FA.FonctionActivationSet()
@@ -27,7 +41,7 @@ class Config:
         self.coefficient_exces = 0.0
         self.coefficient_disjoints = 0.0
 
-    def parser_config(self, chemin_fichier_config):
+    def parser_config_xml(self, chemin_fichier_config):
         tree = parse(chemin_fichier_config)
         racine = tree.getroot()
 
@@ -70,6 +84,21 @@ class Config:
                 self.fonctions_activation.add('tanh', FA.square_activation)
             elif x.tag == 'cube':
                 self.fonctions_activation.add('tanh', FA.cube_activation)
+
+        # parametres genetiques
+        pg = racine.find('parametres_genetiques')
+        self.prob_muter_poids = float(pg.find('prob_muter_poids').text)
+        self.prob_changer_poids = float(pg.find('prob_changer_poids').text)
+        self.puissance_mutation_poids = float(pg.find('puissance_mutation_poids').text)
+        self.poids_min = float(pg.find('poids_min').text)
+        self.poids_max = float(pg.find('poids_max').text)
+        self.prob_changer_etat_connexion = float(pg.find('prob_changer_etat_connexion').text)
+
+        self.prob_muter_biais = float(pg.find('prob_muter_biais').text)
+        self.puissance_mutation_biais = float(pg.find('puissance_mutation_biais').text)
+        self.prob_muter_facteur = float(pg.find('prob_muter_facteur').text)
+        self.puissance_mutation_facteur = float(pg.find('puissance_mutation_facteur').text)
+        self.prob_muter_activation = float(pg.find('prob_muter_activation').text)
 
         # compatibilite genotypes
 

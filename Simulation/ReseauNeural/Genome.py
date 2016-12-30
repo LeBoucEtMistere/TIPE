@@ -21,6 +21,7 @@ else:
         return iter(d.iteritems(**kw))
 
 class Genome(object):
+    #TODO s'assurer que le genome est bien feed forward et que toutes les connections sont valides
 
     def __init__(self, ID, config, parent1_id, parent2_id):
         self.config = config
@@ -74,7 +75,7 @@ class Genome(object):
     def connecter_entierement(self):
         for input_id, output_id in self.calculer_toutes_connexions():
             poids = gauss(0,self.config.cri_distribution_poids_sigma)
-            cg = Gene.Connexion(input_id, output_id, poids, True, Gene.Connexion.nouveau_num_innov())
+            cg = Gene.Connexion(input_id, output_id, poids, True)
             self.connexions[cg.cle] = cg
 
     def connecter_partiellement(self, fraction):
@@ -84,8 +85,20 @@ class Genome(object):
         nbr_a_ajouter = int(round(len(toutes_connexions) * fraction))
         for id_entree, id_sortie in toutes_connexions[:nbr_a_ajouter]:
             poids = gauss(0,self.config.cri_distribution_poids_sigma)
-            cg = Gene.Connexion(id_entree, id_sortie, poids, True, Gene.Connexion.nouveau_num_innov())
+            cg = Gene.Connexion(id_entree, id_sortie, poids, True)
             self.connexions[cg.cle] = cg
+
+    def muter_ajouter_noeud(self):
+        pass
+
+    def muter_ajouter_connection(self):
+        pass
+
+    def muter_enlever_noeud(self):
+        pass
+
+    def muter_enlever_connection(self):
+        pass
 
     @classmethod
     def creer_connecte(cls, ID, config):
@@ -184,7 +197,6 @@ class Genome(object):
                 distance += self.config.coefficient_poids * (diff_poids / en_commun)
 
         return distance
-
 
     def __lt__(self, other):
         '''Classe les genomes par fitness.'''
