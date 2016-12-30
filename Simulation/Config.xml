@@ -27,6 +27,10 @@
         <prob_muter_facteur>0.1</prob_muter_facteur>
         <puissance_mutation_facteur>0.1</puissance_mutation_facteur>
         <prob_muter_activation>0.0</prob_muter_activation>
+        <prob_ajout_noeud>0.085</prob_ajout_noeud>
+        <prob_enlever_noeud>0.0352</prob_enlever_noeud>
+        <prob_ajout_connexion>0.988</prob_ajout_connexion>
+        <prob_enlever_connexion>0.146</prob_enlever_connexion>
     </parametres_genetiques>
 
     <compatibilite_genotypes>

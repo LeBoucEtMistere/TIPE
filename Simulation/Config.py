@@ -30,6 +30,11 @@ class Config:
         self.puissance_mutation_facteur = 0
         self.prob_muter_activation = 0
 
+        self.prob_ajout_noeud = 0
+        self.prob_enlever_noeud = 0
+        self.prob_ajout_connexion = 0
+        self.prob_enlever_connexion = 0
+
         # Fonctions Activation
 
         self.fonctions_activation = FA.FonctionActivationSet()
@@ -99,6 +104,11 @@ class Config:
         self.prob_muter_facteur = float(pg.find('prob_muter_facteur').text)
         self.puissance_mutation_facteur = float(pg.find('puissance_mutation_facteur').text)
         self.prob_muter_activation = float(pg.find('prob_muter_activation').text)
+
+        self.prob_ajout_noeud = float(pg.find('prob_ajout_noeud').text)
+        self.prob_enlever_noeud = float(pg.find('prob_enlever_noeud').text)
+        self.prob_ajout_connexion = float(pg.find('prob_ajout_connexion').text)
+        self.prob_enlever_connexion = float(pg.find('prob_enlever_connexion').text)
 
         # compatibilite genotypes
 

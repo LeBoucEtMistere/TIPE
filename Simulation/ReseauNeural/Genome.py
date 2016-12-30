@@ -91,6 +91,32 @@ class Genome(object):
             cg = Gene.Connexion(id_entree, id_sortie, poids, True)
             self.connexions[cg.cle] = cg
 
+    def muter(self):
+        """ Fait muter ce genome """
+
+        if random() < self.config.prob_ajout_noeud:
+            self.muter_ajouter_noeud()
+
+        if random() < self.config.prob_ajout_connexion:
+            self.muter_ajouter_connection()
+
+        if random() < self.config.prob_enlever_noeud:
+            self.muter_enlever_noeud()
+
+        if random() < self.config.prob_enlever_connexion:
+            self.muter_enlever_connection()
+
+        # Muter les genes de connexion
+        for cg in self.connexions.values():
+            cg.muter(self.config)
+
+        # Muter les genes noeuds
+        for ng in self.noeuds.values():
+            if ng.type != 'INPUT':
+                ng.muter(self.config)
+
+        return self
+
     def muter_ajouter_noeud(self):
         pass
 
