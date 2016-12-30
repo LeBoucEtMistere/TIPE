@@ -2,7 +2,6 @@ import FonctionsActivation
 from random import random, gauss
 
 class Noeud(object):
-    #TODO reproduction
     """
     Cette classe represente un gene de type Noeud
 
@@ -39,11 +38,19 @@ class Noeud(object):
         if random() < config.prob_muter_activation:
             self.muter_activation(config)
 
+    def reproduire_avec(self, autre):
+        """ Retourne un nouveau Noeud possedant les caracteres de ses 2 parents choisis aleatoirement."""
+
+        biais = self.biais if random() > 0.5 else autre.biais
+        facteur = self.facteur if random() > 0.5 else autre.facteur
+        activation = self.activation if random() > 0.5 else autre.activation
+
+        return Noeud(self.ID, self.type, biais, facteur, activation)
+
     def __str__(self):
         return 'Noeud(id={0}, type={1}, biais={2}, facteur={3} activation={4})'.format(self.ID, self.type, self.biais, self.facteur, self.activation)
 
 class Connexion(object):
-    #TODO reproduction / division en deux connexions
     """
     Cette classe represente un gene de type connexion
 
@@ -96,6 +103,15 @@ class Connexion(object):
         nouvelle_connexion_2 = Connexion(id_noeud, self.sortie, self.poids, True)
 
         return nouvelle_connexion_1, nouvelle_connexion_2
+
+    def reproduire_avec(self, autre):
+        """ Retourne une nouvelle connexion possedant les caracteres de ses 2 parents choisis aleatoirement."""
+        assert (self.cle == autre.cle)  # on doit avoir le meme numero d'innovation
+
+        poids = self.poids if random() > 0.5 else autre.poids
+        actif = self.actif if random() > 0.5 else autre.actif
+
+        return Connexion(self.entree, self.sortie, poids, actif)
 
     def __lt__(self, autre_connexion):
         return self.cle < autre_connexion.cle
