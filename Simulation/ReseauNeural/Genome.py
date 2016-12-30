@@ -147,6 +147,14 @@ class Genome(object):
             nouvel_id += 1
         return nouvel_id
 
+    def connection_est_feedforward(self, noeud_entree, noeud_sortie):
+        if noeud_entree.type == 'ENTREE' or noeud_sortie.type == 'SORTIE':
+            return True
+
+        assert noeud_entree.ID in self.ordre_noeuds
+        assert noeud_sortie.ID in self.ordre_noeuds
+        return self.ordre_noeuds.index(noeud_entree.ID) < self.ordre_noeuds.index(noeud_sortie.ID)
+
     def distance(self, autre_genome):
 
         if len(self.connexions) > len(autre_genome.connexions):
