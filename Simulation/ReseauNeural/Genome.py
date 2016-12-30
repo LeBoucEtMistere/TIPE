@@ -43,6 +43,61 @@ class Genome(object):
         self.parent1_id = parent1_id
         self.parent2_id = parent2_id
 
+    def crossover(self, autre, id_enfant):
+        """ Renvoie l'enfant issue du crossover des deux parents """
+
+        # Les parents doivent appartenir a la meme espece
+        assert self.espece_id == autre.espece_id, 'Parents de 2 especes differnetes : {0} vs {1}'.format(self.espece_id, autre.espece_id)
+
+        if self.fitness > autre.fitness:
+            parent1 = self
+            parent2 = autre
+        else:
+            parent1 = autre
+            parent2 = self
+
+        # creer un nouvel enfant
+        enfant = Genome(id_enfant, self.config, self.ID, autre.ID)
+
+        enfant.heriter_genes(parent1, parent2)
+
+        enfant.espece_id = parent1.espece_id
+
+        return enfant
+
+    def heriter_genes(self, parent1, parent2):
+        """ Applique l'operateur de crossover """
+        assert (parent1.fitness >= parent2.fitness)
+        # le parent 1 est le meilleur au sens de la fitness
+
+        # Crossover des genes de connexion
+        for cg1 in parent1.connexions.values():
+            try:
+                cg2 = parent2.connexions[cg1.cle]
+            except KeyError:  # le gene de meme marqueur historique n'existe pas chez le parent 2
+                # On copie les genes en exces ou disjoints du parent 1
+                self.connexions[cg1.cle] = cg1.copier()
+            else:
+                if cg2.est_meme_innovation(cg1):
+                    # On a trouve un gene homologue
+                    nouveau_gene = cg1.reproduire_avec(cg2)
+                else:
+                    nouveau_gene = cg1.copier()
+                self.connexions[nouveau_gene.cle] = nouveau_gene
+
+        # Crossover des genes noeuds
+        for ng1_id, ng1 in parent1.noeuds.items():
+            ng2 = parent2.noeuds.get(ng1_id)
+            if ng2 is None:
+                # on copie les genes en plus du parent 1
+                nouveau_gene = ng1.copier()
+            else:
+                # sinon on fait le choix aleatoire entre les caracteristiques des 2 parents
+                nouveau_gene = ng1.reproduire_avec(ng2)
+
+            assert nouveau_gene.ID not in self.noeuds
+            self.noeuds[nouveau_gene.ID] = nouveau_gene
+
     def ajouter_noeud_cache(self):
         nouvel_id = self.nouvel_id_cache()
         self.noeuds[nouvel_id] = Gene.Noeud(nouvel_id, 'CACHE', activation=self.config.fonctions_activation.get_aleatoire())

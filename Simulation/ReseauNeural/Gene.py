@@ -47,6 +47,9 @@ class Noeud(object):
 
         return Noeud(self.ID, self.type, biais, facteur, activation)
 
+    def copier(self):
+        return Noeud(self.ID, self.type, self.biais, self.facteur, self.activation)
+
     def __str__(self):
         return 'Noeud(id={0}, type={1}, biais={2}, facteur={3} activation={4})'.format(self.ID, self.type, self.biais, self.facteur, self.activation)
 
@@ -112,6 +115,9 @@ class Connexion(object):
         actif = self.actif if random() > 0.5 else autre.actif
 
         return Connexion(self.entree, self.sortie, poids, actif)
+
+    def copier(self):
+        return Connexion(self.entree, self.sortie, self.poids, self.actif)
 
     def __lt__(self, autre_connexion):
         return self.cle < autre_connexion.cle

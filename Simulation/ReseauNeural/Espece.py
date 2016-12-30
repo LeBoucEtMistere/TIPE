@@ -1,5 +1,6 @@
 from random import choice
 
+
 class Espece:
     """ Regroupement d'individus genetiquement similaires."""
 
@@ -14,6 +15,8 @@ class Espece:
 
     def ajouter(self, individu):
         self.membres.append(individu)
+        individu.espece_id = self.ID
+
 
 class SetEspece:
     """ Encapsule le schema de speciation et stocke les especes. """
