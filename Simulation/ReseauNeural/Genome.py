@@ -30,6 +30,8 @@ class Genome(object):
         self.nbr_sorties = 0
         self.nbr_caches = 0
 
+        self.ordre_noeuds = [] # Pour assurer le caractere feed-forward du genome
+
         # dictionnaires de la forme pair(id,gene)
         self.connexions = {}
         self.noeuds = {}
@@ -45,14 +47,15 @@ class Genome(object):
         nouvel_id = self.nouvel_id_cache()
         self.noeuds[nouvel_id] = Gene.Noeud(nouvel_id, 'CACHE', activation=self.config.fonctions_activation.get_aleatoire())
         self.nbr_caches += 1
+        self.ordre_noeuds.append(nouvel_id)
 
     def ajouter_noeuds_caches(self, nbr):
-        id_noeud = self.nouvel_id_cache()
         for i in range(nbr):
+            id_noeud = self.nouvel_id_cache()
             noeud = Gene.Noeud(id_noeud, 'CACHE', activation=self.config.fonctions_activation.get_aleatoire())
             assert noeud.ID not in self.noeuds
             self.noeuds[noeud.ID] = noeud
-            id_noeud += 1
+            self.ordre_noeuds.append(noeud.ID)
             self.nbr_caches += 1
 
     def calculer_toutes_connexions(self):
