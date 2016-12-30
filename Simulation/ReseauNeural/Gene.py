@@ -88,6 +88,15 @@ class Connexion(object):
     def est_meme_innovation(self, autre):
         return self.cle == autre.cle
 
+    def separer(self, id_noeud):
+        """ Separe une connexion, en cree deux autres, et desactive l'originale """
+        self.enabled = False
+
+        nouvelle_connexion_1 = Connexion(self.entree, id_noeud, 1.0, True)
+        nouvelle_connexion_2 = Connexion(id_noeud, self.sortie, self.poids, True)
+
+        return nouvelle_connexion_1, nouvelle_connexion_2
+
     def __lt__(self, autre_connexion):
         return self.cle < autre_connexion.cle
 

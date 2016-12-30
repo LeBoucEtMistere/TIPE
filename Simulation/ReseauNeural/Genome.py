@@ -2,7 +2,7 @@ import Gene
 
 import sys
 
-from random import shuffle, gauss
+from random import shuffle, gauss, choice, randint, random
 from math import fabs
 
 # Instead of adding six as a dependency, this code was copied from the six
@@ -20,8 +20,8 @@ else:
     def iteritems(d, **kw):
         return iter(d.iteritems(**kw))
 
+
 class Genome(object):
-    #TODO s'assurer que le genome est bien feed forward et que toutes les connections sont valides
 
     def __init__(self, ID, config, parent1_id, parent2_id):
         self.config = config
@@ -118,16 +118,98 @@ class Genome(object):
         return self
 
     def muter_ajouter_noeud(self):
-        pass
+        # Si il n'y a pas de liaisons, on arrete
+        if not self.connexions:
+            return
+
+        # Trouver une connexion au hasard qui sera separee
+        connexion_a_separer = choice(list(self.connexions.values()))
+        nouvel_id_noeud = self.nouvel_id_cache()
+        ng = Gene.Noeud(nouvel_id_noeud, 'CACHE', activation=self.config.fonctions_activation.get_aleatoire())
+        assert ng.ID not in self.noeuds
+        self.noeuds[ng.ID] = ng
+        nouvelle_conn_1, nouvelle_conn_2 = connexion_a_separer.separer(ng.ID)
+        self.connexions[nouvelle_conn_1.cle] = nouvelle_conn_1
+        self.connexions[nouvelle_conn_2.cle] = nouvelle_conn_2
+
+        # Ajouter le noeud a la liste d'ordre des noeuds: apres le noeud d'entree de la connexion originale
+        # et avant sa sortie
+        if self.noeuds[connexion_a_separer.entree].type == 'CACHE':
+            mini = self.ordre_noeuds.index(connexion_a_separer.entree) + 1
+        else:
+            # L'entree originale est un noeud d'ENTREE, pas un noeud CACHE
+            mini = 0
+        if self.noeuds[connexion_a_separer.sortie].type == 'CACHE':
+            maxi = self.ordre_noeuds.index(connexion_a_separer.sortie)
+        else:
+            # La sortie originale est un noeud de SORTIE, pas CACHE
+            maxi = len(self.ordre_noeuds)
+
+        self.ordre_noeuds.insert(randint(mini, maxi), ng.ID)
+        assert (len(self.ordre_noeuds) == len([n for n in self.noeuds.values() if n.type == 'CACHE']))
+        return ng, connexion_a_separer
 
     def muter_ajouter_connection(self):
-        pass
+        ''' Tente de creer une connexion, en respectant les 2 regles :
+            le noeud de sortie ne peut pas etre un noeud d'entree du reseau
+            la connexion doit etre feed-forward '''
+
+        entrees_possibles = [n for n in self.noeuds.values() if n.type != 'SORTIE']
+        sorties_possibles = [n for n in self.noeuds.values() if n.type != 'ENTREE']
+
+        noeud_entree = choice(entrees_possibles)
+        noeud_sortie = choice(sorties_possibles)
+
+        # Creer la connexion seulement si elle est feed-forward et qu'elle n'existe pas deja
+        if self.connection_est_feedforward(noeud_entree, noeud_sortie):
+            cle = (noeud_entree.ID, noeud_sortie.ID)
+            if cle not in self.connexions:
+                poids = gauss(0, self.config.cri_distribution_poids_sigma)
+                active = choice([False, True])
+                cg = self.config.conn_gene_type(noeud_entree.ID, noeud_sortie.ID, poids, active)
+                self.connexions[cg.cle] = cg
 
     def muter_enlever_noeud(self):
-        pass
+        # Ne rien faire s'il n'y a pas de noeud cache
+        if len(self.noeuds) <= self.nbr_entrees + self.nbr_sorties:
+            return
+
+        # On selectionne un noeud au hasard
+        idx = None
+        while 1:
+            idx = choice(list(self.noeuds.keys()))
+            if self.noeuds[idx].type == 'CACHE':
+                break
+
+        node = self.noeuds[idx]
+        id_noeud = node.ID
+
+        cles_a_supprimer = set()
+        for cle, valeur in self.connexions.items():
+            if id_noeud in (valeur.entree, valeur.sortie):
+                cles_a_supprimer.add(cle)
+
+        # On verifie qu'on ne supprime pas tous les genes de connexion
+        if len(cles_a_supprimer) >= len(self.connexions):
+            return
+
+        for cle in cles_a_supprimer:
+            del self.connexions[cle]
+
+        del self.noeuds[idx]
+
+        assert len(self.connexions) > 0
+        assert len(self.noeuds) >= self.nbr_entrees + self.nbr_sorties
+
+        self.ordre_noeuds.remove(id_noeud)
 
     def muter_enlever_connection(self):
-        pass
+        if len(self.connexions) > self.nbr_entrees + self.nbr_sorties:
+            cle = choice(list(self.connexions.keys()))
+            del self.connexions[cle]
+
+            assert len(self.connexions) > 0
+            assert len(self.noeuds) >= self.nbr_entrees + self.nbr_sorties
 
     @classmethod
     def creer_connecte(cls, ID, config):
@@ -249,6 +331,3 @@ class Genome(object):
             s += str(c)
             s += '\n'
         return s
-
-
-
