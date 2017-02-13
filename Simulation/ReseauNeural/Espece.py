@@ -17,6 +17,9 @@ class Espece:
         self.membres.append(individu)
         individu.espece_id = self.ID
 
+    def mettre_a_jour_representant(self):
+        self.representant = choice(self.membres)
+
 
 class SetEspece:
     """ Encapsule le schema de speciation et stocke les especes. """
@@ -50,4 +53,4 @@ class SetEspece:
 
         # On choisi un individu au hasard en tant que nouveau representant de l'espece
         for s in self.especes:
-            s.representant = choice(s.membres)
+            s.mettre_a_jour_representant()

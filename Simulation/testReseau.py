@@ -13,7 +13,8 @@ L = []
 
 for k in T:
     c.seuil_compatibilite = k
-    population = Population(c, 1000)
+    population = Population(c, 100)
+    population.evoluer(lambda p: 1, 20)
     L.append(population.set_especes.nbr_espece)
 
 plt.plot(T, L)
