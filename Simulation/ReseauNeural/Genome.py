@@ -30,8 +30,6 @@ class Genome(object):
         self.nbr_sorties = 0
         self.nbr_caches = 0
 
-        self.ordre_noeuds = [] # Pour assurer le caractere feed-forward du genome
-
         # dictionnaires de la forme pair(id,gene)
         self.connexions = {}
         self.noeuds = {}
@@ -98,19 +96,18 @@ class Genome(object):
             assert nouveau_gene.ID not in self.noeuds
             self.noeuds[nouveau_gene.ID] = nouveau_gene
 
-    def ajouter_noeud_cache(self):
+    def ajouter_noeud_cache(self, couche):
         nouvel_id = self.nouvel_id_cache()
-        self.noeuds[nouvel_id] = Gene.Noeud(nouvel_id, 'CACHE', activation=self.config.fonctions_activation.get_aleatoire())
+        self.noeuds[nouvel_id] = Gene.Noeud(nouvel_id, couche, 'CACHE', activation=self.config.fonctions_activation.get_aleatoire())
         self.nbr_caches += 1
         self.ordre_noeuds.append(nouvel_id)
 
-    def ajouter_noeuds_caches(self, nbr):
+    def ajouter_noeuds_caches(self, nbr, couche):
         for i in range(nbr):
             id_noeud = self.nouvel_id_cache()
-            noeud = Gene.Noeud(id_noeud, 'CACHE', activation=self.config.fonctions_activation.get_aleatoire())
+            noeud = Gene.Noeud(id_noeud, couche, 'CACHE', activation=self.config.fonctions_activation.get_aleatoire())
             assert noeud.ID not in self.noeuds
             self.noeuds[noeud.ID] = noeud
-            self.ordre_noeuds.append(noeud.ID)
             self.nbr_caches += 1
 
     def calculer_toutes_connexions(self):
@@ -179,30 +176,21 @@ class Genome(object):
 
         # Trouver une connexion au hasard qui sera separee
         connexion_a_separer = choice(list(self.connexions.values()))
+
+        #preparer le noeud a inserer
+        nouvel_couche_noeud = self.noeuds[connexion_a_separer.entree].couche
         nouvel_id_noeud = self.nouvel_id_cache()
-        ng = Gene.Noeud(nouvel_id_noeud, 'CACHE', activation=self.config.fonctions_activation.get_aleatoire())
+        ng = Gene.Noeud(nouvel_id_noeud, nouvel_couche_noeud,  'CACHE', activation=self.config.fonctions_activation.get_aleatoire())
+
         assert ng.ID not in self.noeuds
         self.noeuds[ng.ID] = ng
+
         nouvelle_conn_1, nouvelle_conn_2 = connexion_a_separer.separer(ng.ID)
         self.connexions[nouvelle_conn_1.cle] = nouvelle_conn_1
         self.connexions[nouvelle_conn_2.cle] = nouvelle_conn_2
 
-        # Ajouter le noeud a la liste d'ordre des noeuds: apres le noeud d'entree de la connexion originale
-        # et avant sa sortie
-        if self.noeuds[connexion_a_separer.entree].type == 'CACHE':
-            mini = self.ordre_noeuds.index(connexion_a_separer.entree) + 1
-        else:
-            # L'entree originale est un noeud d'ENTREE, pas un noeud CACHE
-            mini = 0
-        if self.noeuds[connexion_a_separer.sortie].type == 'CACHE':
-            maxi = self.ordre_noeuds.index(connexion_a_separer.sortie)
-        else:
-            # La sortie originale est un noeud de SORTIE, pas CACHE
-            maxi = len(self.ordre_noeuds)
-
-        self.ordre_noeuds.insert(randint(mini, maxi), ng.ID)
-        assert (len(self.ordre_noeuds) == len([n for n in self.noeuds.values() if n.type == 'CACHE']))
-        return ng, connexion_a_separer
+        # Met a jour les couches des noeuds qui suivent le noeud ajoute
+        self.decaler_couche_noeud(ng)
 
     def muter_ajouter_connection(self):
         ''' Tente de creer une connexion, en respectant les 2 regles :
@@ -215,14 +203,42 @@ class Genome(object):
         noeud_entree = choice(entrees_possibles)
         noeud_sortie = choice(sorties_possibles)
 
+        while noeud_sortie == noeud_entree:
+            noeud_entree = choice(entrees_possibles)
+            noeud_sortie = choice(sorties_possibles)
+
         # Creer la connexion seulement si elle est feed-forward et qu'elle n'existe pas deja
-        if self.connection_est_feedforward(noeud_entree, noeud_sortie):
-            cle = (noeud_entree.ID, noeud_sortie.ID)
+        if noeud_entree.couche <= noeud_sortie.couche : #la connexion doit etre feed-forward
+
+            cle = (noeud_entree.ID, noeud_sortie.ID) #la connexion ne doit pas exister
             if cle not in self.connexions:
+
                 poids = gauss(0, self.config.cri_distribution_poids_sigma)
-                active = choice([False, True])
-                cg = self.config.conn_gene_type(noeud_entree.ID, noeud_sortie.ID, poids, active)
+                active = (True if random() > 0.5 else False)
+
+                cg = Gene.Connexion(noeud_entree.ID, noeud_sortie.ID, poids, active)
+
                 self.connexions[cg.cle] = cg
+
+                if noeud_entree.couche == noeud_sortie.couche: #Si la connexion s'est faite dans la meme couche
+                    #Alors on decale tout ce qui est lie au noeud de sortie
+                    self.decaler_couche_noeud(noeud_sortie)
+
+    def decaler_couche_noeud(self, noeud): #recursif
+        if noeud.type == 'SORTIE':
+            return
+        else:
+            noeud.couche += 1
+
+            #on recupere les noeuds relies a ce noeud
+            id_noeuds_suivants = []
+            for c in self.connexions.keys():
+                if c[0] == noeud:
+                    id_noeuds_suivants.append(c[1])
+
+            #on incremente leur couche
+            for n_id in id_noeuds_suivants:
+                self.decaler_couche_noeud(n)
 
     def muter_enlever_noeud(self):
         # Ne rien faire s'il n'y a pas de noeud cache
@@ -256,8 +272,6 @@ class Genome(object):
         assert len(self.connexions) > 0
         assert len(self.noeuds) >= self.nbr_entrees + self.nbr_sorties
 
-        self.ordre_noeuds.remove(id_noeud)
-
     def muter_enlever_connection(self):
         if len(self.connexions) > self.nbr_entrees + self.nbr_sorties:
             cle = choice(list(self.connexions.keys()))
@@ -272,7 +286,7 @@ class Genome(object):
         g = Genome.creer_genome_deconnecte(ID, config)
 
         if g.config.cri_nbr_caches > 0:
-            g.ajouter_noeuds_caches(g.config.cri_nbr_caches)
+            g.ajouter_noeuds_caches(g.config.cri_nbr_caches, 1)
 
         if g.config.cri_type_connexion == 'totale':
             g.connecter_entierement()
@@ -289,12 +303,12 @@ class Genome(object):
         noeud_id = 0
         for i in range(c.config.cri_nbr_entrees):
             assert noeud_id not in c.noeuds
-            c.noeuds[noeud_id] = Gene.Noeud(noeud_id, 'ENTREE', activation=c.config.fonctions_activation.get_aleatoire())
+            c.noeuds[noeud_id] = Gene.Noeud(noeud_id, 0, 'ENTREE', activation=c.config.fonctions_activation.get_aleatoire())
             noeud_id += 1
             c.nbr_entrees += 1
 
         for i in range(c.config.cri_nbr_sorties):
-            noeud = Gene.Noeud(noeud_id, 'SORTIE', activation=c.config.fonctions_activation.get_aleatoire())
+            noeud = Gene.Noeud(noeud_id, float('Inf'), 'SORTIE', activation=c.config.fonctions_activation.get_aleatoire())
             assert noeud.ID not in c.noeuds
             c.noeuds[noeud.ID] = noeud
             noeud_id += 1
@@ -309,14 +323,6 @@ class Genome(object):
         while nouvel_id in self.noeuds:
             nouvel_id += 1
         return nouvel_id
-
-    def connection_est_feedforward(self, noeud_entree, noeud_sortie):
-        if noeud_entree.type == 'ENTREE' or noeud_sortie.type == 'SORTIE':
-            return True
-
-        assert noeud_entree.ID in self.ordre_noeuds
-        assert noeud_sortie.ID in self.ordre_noeuds
-        return self.ordre_noeuds.index(noeud_entree.ID) < self.ordre_noeuds.index(noeud_sortie.ID)
 
     def distance(self, autre_genome):
 

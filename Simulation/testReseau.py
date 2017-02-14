@@ -1,24 +1,14 @@
 from ReseauNeural.Population import Population
 from Config import Config
 
-import matplotlib.pyplot as plt
-import numpy as np
-
 c = Config()
 c.parser_config_xml("Config.xml")
 
+population = Population(c, 100)
+population.evoluer(lambda p: 1, 20)
 
-T = [k for k in np.arange(0.8,1.6,0.1)]
-L = []
+print(population.population[0])
 
-for k in T:
-    c.seuil_compatibilite = k
-    population = Population(c, 100)
-    population.evoluer(lambda p: 1, 20)
-    L.append(population.set_especes.nbr_espece)
-
-plt.plot(T, L)
-plt.show()
 
 
 

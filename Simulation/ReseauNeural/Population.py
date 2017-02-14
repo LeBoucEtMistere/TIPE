@@ -59,7 +59,7 @@ class Population:
                 parent1 = choice(pour_repro)
                 parent2 = choice(pour_repro)
                 enfant = parent1.crossover(parent2, self.nouvel_index())
-                #enfant.muter()
+                enfant.muter()
                 nouvelle_espece.append(enfant)
 
             self.population.extend(nouvelle_espece)

@@ -11,9 +11,10 @@ class Noeud(object):
     activation : la fonction d'activation du noeud
 
     """
-    def __init__(self, ID, type, biais=0.0, facteur=4.924273, activation=FonctionsActivation.sigmoid_activation):
+    def __init__(self, ID, couche, type, biais=0.0, facteur=4.924273, activation=FonctionsActivation.sigmoid_activation):
         assert type in ('ENTREE', 'SORTIE', 'CACHE')
         self.ID = ID
+        self.couche = couche
         self.type = type
         self.biais = biais
         self.facteur = facteur
@@ -45,13 +46,14 @@ class Noeud(object):
         facteur = self.facteur if random() > 0.5 else autre.facteur
         activation = self.activation if random() > 0.5 else autre.activation
 
-        return Noeud(self.ID, self.type, biais, facteur, activation)
+        return Noeud(self.ID, self.couche, self.type, biais, facteur, activation)
 
     def copier(self):
-        return Noeud(self.ID, self.type, self.biais, self.facteur, self.activation)
+        return Noeud(self.ID, self.couche, self.type, self.biais, self.facteur, self.activation)
 
     def __str__(self):
-        return 'Noeud(id={0}, type={1}, biais={2}, facteur={3} activation={4})'.format(self.ID, self.type, self.biais, self.facteur, self.activation)
+        return 'Noeud(id={0}, couche={1}, type={2}, biais={3}, facteur={4} activation={5})'.format(self.ID, self.couche, self.type, self.biais, self.facteur, self.activation)
+
 
 class Connexion(object):
     """
@@ -62,7 +64,6 @@ class Connexion(object):
     sortie(int) : Noeud de sortie
     poids(float) : le poids de la liaison
     actif(bool) : le statut du gene
-    innovation(int) : le numero d'innovation
     """
     def __init__(self, entree, sortie, poids, actif):
 
@@ -100,7 +101,7 @@ class Connexion(object):
 
     def separer(self, id_noeud):
         """ Separe une connexion, en cree deux autres, et desactive l'originale """
-        self.enabled = False
+        self.actif = False
 
         nouvelle_connexion_1 = Connexion(self.entree, id_noeud, 1.0, True)
         nouvelle_connexion_2 = Connexion(id_noeud, self.sortie, self.poids, True)
@@ -123,5 +124,5 @@ class Connexion(object):
         return self.cle < autre_connexion.cle
 
     def __str__(self):
-        return 'connexion({0} -> {1} , poids={2}, activee={3}, innovation={4})'.format(self.entree, self.sortie, self.poids, self.actif, self.innovation)
+        return 'connexion({0} -> {1} , poids={2}, activee={3}, cle_innovation={4})'.format(self.entree, self.sortie, self.poids, self.actif, self.cle)
 
