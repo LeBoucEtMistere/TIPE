@@ -22,9 +22,23 @@ class Population:
         return self.indexer - 1
 
     def evoluer(self, fitness_fonction, nbr_generation_max):
-        for _ in range(nbr_generation_max):
-            self.evaluer_fitness(fitness_fonction)
+
+        self.evaluer_fitness(fitness_fonction)
+
+        meilleur = None
+
+        for i in range(nbr_generation_max):
             self.reproduction()
+            self.evaluer_fitness(fitness_fonction)
+            tab_fitness = [m.fitness for m in self.population]
+            max_fitness = max(tab_fitness)
+            moy_fitness = sum(tab_fitness)/len(tab_fitness)
+            print("Generation : {} / fitness maximale : {} / fitness moyenne : {}".format(i+1, max_fitness, moy_fitness))
+            for g in self.population:
+                if g.fitness == max_fitness:
+                    meilleur = g
+
+        return meilleur
 
     def reproduction(self):
 
