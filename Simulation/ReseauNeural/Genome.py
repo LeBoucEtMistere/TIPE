@@ -273,7 +273,7 @@ class Genome(object):
         assert len(self.noeuds) >= self.nbr_entrees + self.nbr_sorties
 
     def muter_enlever_connection(self):
-        if len(self.connexions) > self.nbr_entrees + self.nbr_sorties:
+        if len(self.connexions) > 1:
             cle = choice(list(self.connexions.keys()))
             del self.connexions[cle]
 

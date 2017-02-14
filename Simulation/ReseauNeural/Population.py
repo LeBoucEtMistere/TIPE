@@ -4,6 +4,16 @@ from Espece import SetEspece
 from random import choice
 from operator import attrgetter
 
+import matplotlib.pyplot as plt
+import numpy as np
+import time as tm
+
+
+def update_line(hl, new_data_x, new_data_y):
+    hl.set_xdata(np.append(hl.get_xdata(), new_data_x))
+    hl.set_ydata(np.append(hl.get_ydata(), new_data_y))
+    plt.pause(0.05)
+
 
 class Population:
 
@@ -21,11 +31,25 @@ class Population:
         self.indexer += 1
         return self.indexer - 1
 
-    def evoluer(self, fitness_fonction, nbr_generation_max):
+    def evoluer(self, fitness_fonction, nbr_generation_max, log=0):
 
         self.evaluer_fitness(fitness_fonction)
 
         meilleur = None
+
+        plt.axis([0, nbr_generation_max, 0, 5])
+        plt.ion()
+
+        max_line = plt.plot([], [], 'r', label='Fitness Maximale')
+        moy_line = plt.plot([], [], 'b', label='Fitness Moyenne')
+
+        plt.title("Evolution de la fitness")
+        plt.xlabel("Generation")
+        plt.ylabel("Fitness")
+
+        plt.legend()
+
+        tref = tm.clock()
 
         for i in range(nbr_generation_max):
             self.reproduction()
@@ -33,10 +57,24 @@ class Population:
             tab_fitness = [m.fitness for m in self.population]
             max_fitness = max(tab_fitness)
             moy_fitness = sum(tab_fitness)/len(tab_fitness)
-            print("Generation : {} / fitness maximale : {} / fitness moyenne : {}".format(i+1, max_fitness, moy_fitness))
+
+            if log != 0:
+                if i%10 == 0:
+                    print("Temps de travail : {}s".format(int(tm.clock()-tref)))
+                    print("Generation : {} / fitness maximale : {} / fitness moyenne : {}".format(i+1, max_fitness, moy_fitness))
+
+            update_line(max_line[0], i, max_fitness)
+            update_line(moy_line[0], i, moy_fitness)
+
             for g in self.population:
                 if g.fitness == max_fitness:
-                    meilleur = g
+                    if meilleur is None:
+                        meilleur = g
+                    elif g.fitness > meilleur.fitness:
+                        meilleur = g
+
+        plt.ioff()
+        plt.show()
 
         return meilleur
 
@@ -65,7 +103,7 @@ class Population:
         self.population = []
 
         for espece in self.set_especes.especes:
-            membre_trie = sorted(espece.membres, key=attrgetter('fitness'))
+            membre_trie = sorted(espece.membres, key=attrgetter('fitness'), reverse=True)
             a_enlever = int(0.2 * len(membre_trie))
             pour_repro = membre_trie[:len(membre_trie)-a_enlever]
             nouvelle_espece = []
@@ -82,4 +120,4 @@ class Population:
 
     def evaluer_fitness(self, fitness_fonction):
         for p in self.population:
-            p.fitness = fitness_fonction(p)
+            fitness_fonction(p)
