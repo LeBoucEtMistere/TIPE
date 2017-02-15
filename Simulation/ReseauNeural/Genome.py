@@ -184,6 +184,7 @@ class Genome(object):
 
         assert ng.ID not in self.noeuds
         self.noeuds[ng.ID] = ng
+        self.nbr_caches += 1
 
         nouvelle_conn_1, nouvelle_conn_2 = connexion_a_separer.separer(ng.ID)
         self.connexions[nouvelle_conn_1.cle] = nouvelle_conn_1
@@ -242,15 +243,12 @@ class Genome(object):
 
     def muter_enlever_noeud(self):
         # Ne rien faire s'il n'y a pas de noeud cache
-        if len(self.noeuds) <= self.nbr_entrees + self.nbr_sorties:
+        if self.nbr_caches == 0:
             return
 
         # On selectionne un noeud au hasard
-        idx = None
-        while 1:
-            idx = choice(list(self.noeuds.keys()))
-            if self.noeuds[idx].type == 'CACHE':
-                break
+        noeuds = [id for id, n in self.noeuds.items() if n.type =='CACHE']
+        idx = choice(noeuds)
 
         node = self.noeuds[idx]
         id_noeud = node.ID
@@ -268,9 +266,10 @@ class Genome(object):
             del self.connexions[cle]
 
         del self.noeuds[idx]
+        self.nbr_caches -= 1
 
         assert len(self.connexions) > 0
-        assert len(self.noeuds) >= self.nbr_entrees + self.nbr_sorties
+        assert self.nbr_caches > 0
 
     def muter_enlever_connection(self):
         if len(self.connexions) > 1:
@@ -278,7 +277,6 @@ class Genome(object):
             del self.connexions[cle]
 
             assert len(self.connexions) > 0
-            assert len(self.noeuds) >= self.nbr_entrees + self.nbr_sorties
 
     @classmethod
     def creer_connecte(cls, ID, config):
