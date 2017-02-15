@@ -3,7 +3,7 @@
     <config_reseau_initiale>
         <nbr_entrees>2</nbr_entrees>
         <nbr_sorties>1</nbr_sorties>
-        <nbr_caches>5</nbr_caches>
+        <nbr_caches>0</nbr_caches>
         <type_connexion>
             <totale/>
         </type_connexion>

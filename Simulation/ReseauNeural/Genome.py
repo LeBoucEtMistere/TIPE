@@ -269,7 +269,7 @@ class Genome(object):
         self.nbr_caches -= 1
 
         assert len(self.connexions) > 0
-        assert self.nbr_caches > 0
+        assert self.nbr_caches >= 0
 
     def muter_enlever_connection(self):
         if len(self.connexions) > 1:
