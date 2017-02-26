@@ -18,9 +18,10 @@ def eval_genomes(genome):
         genome.fitness -= (output[0] - xo[0]) ** 2
 
 population = Population(c, 150)
-m = population.evoluer(eval_genomes, 300, 1)
+m = population.evoluer(eval_genomes, 500, 1)
 
 print("Genome gagnant : fitness = {}".format(m.fitness))
+print(m)
 
 
 

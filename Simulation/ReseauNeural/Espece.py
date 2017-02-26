@@ -27,6 +27,7 @@ class SetEspece:
     def __init__(self, config):
         self.config = config
         self.especes = []
+        self.indice_espece = 0
         self.nbr_espece = 0
 
     def speciation(self, population):
@@ -45,11 +46,13 @@ class SetEspece:
                 plus_proche_espece.ajouter(individu)
             else:
                 # Aucune espece n'est assez proche, on doit en creer une nouvelle pour l'individu
-                self.especes.append(Espece(individu, self.nbr_espece))
-                self.nbr_espece += 1
+                self.especes.append(Espece(individu, self.indice_espece))
+                self.indice_espece += 1
 
         # On supprime les especes vides d'individus
         self.especes = [s for s in self.especes if s.membres]
+
+        self.nbr_espece = len(self.especes)
 
         # On choisi un individu au hasard en tant que nouveau representant de l'espece
         for s in self.especes:

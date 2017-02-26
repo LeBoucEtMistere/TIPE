@@ -37,22 +37,36 @@ class Population:
 
         meilleur = None
 
-        plt.axis([0, nbr_generation_max, 0, 5])
         plt.ion()
 
-        max_line = plt.plot([], [], 'r', label='Fitness Maximale')
-        moy_line = plt.plot([], [], 'b', label='Fitness Moyenne')
+        f, axarr = plt.subplots(3, sharex=True, figsize=(15, 9))
 
-        plt.title("Evolution de la fitness")
-        plt.xlabel("Generation")
-        plt.ylabel("Fitness")
+        max_line = axarr[0].plot([], [], 'r', label='Fitness Maximale')
+        moy_line = axarr[0].plot([], [], 'b', label='Fitness Moyenne')
+        axarr[0].set_title('Evolution de la Fitness')
+        axarr[0].axis([0, nbr_generation_max, 0, 5])
+        axarr[0].set_ylabel("Fitness")
+        axarr[0].legend()
 
-        plt.legend()
+        pop_line = axarr[1].plot([], [], 'g', label='Population Totale')
+        axarr[1].axis([0, nbr_generation_max, 0, len(self.population)*3/2])
+        axarr[1].set_ylabel("Population")
+        axarr[1].legend()
+
+        espece_line = axarr[2].plot([], [], 'y', label='Nombre d\'especes')
+        axarr[2].axis([0, nbr_generation_max, 0, 20])
+        axarr[2].set_xlabel("Generations")
+        axarr[2].set_ylabel("Especes")
+        axarr[2].legend()
+
+        f.canvas.set_window_title('Evolution de l\'algorithme')
+
+
 
         tref = tm.clock()
 
         for i in range(nbr_generation_max):
-            self.reproduction()
+            repro_stat = self.reproduction()
             self.evaluer_fitness(fitness_fonction)
             tab_fitness = [m.fitness for m in self.population]
             max_fitness = max(tab_fitness)
@@ -62,9 +76,12 @@ class Population:
                 if i%10 == 0:
                     print("Temps de travail : {}s".format(int(tm.clock()-tref)))
                     print("Generation : {} / fitness maximale : {} / fitness moyenne : {}".format(i+1, max_fitness, moy_fitness))
+                    print(repro_stat)
 
             update_line(max_line[0], i, max_fitness)
             update_line(moy_line[0], i, moy_fitness)
+            update_line(pop_line[0], i, len(self.population))
+            update_line(espece_line[0], i, self.set_especes.nbr_espece)
 
             for g in self.population:
                 if g.fitness == max_fitness:
@@ -90,9 +107,9 @@ class Population:
         for s, sfitness in fitness_ajustee.items():
             spawn = len(s.membres)
             if sfitness > fitness_ajustee_moyenne:
-                spawn = max(spawn + 2, spawn * 1.1)
+                spawn = max(spawn + 2, spawn * 1.2)
             else:
-                spawn = max(spawn * 0.9, 2)
+                spawn = max(spawn * 0.8, 2)
             qte_spawn[s] = spawn
 
         total_spawn = sum(qte_spawn.values())
@@ -100,12 +117,22 @@ class Population:
 
         a_spawner = {espece: int(round(n * norm)) for espece, n in qte_spawn.items()}
 
+        #affichage debug
+        s="/----\n"
+        s+="        -- fitness moyenne ajustee {} -- total spawn {} -- \n".format(fitness_ajustee_moyenne,total_spawn)
+        for espece,qte in a_spawner.items():
+            s+="----- Espece n{}, fitness ajustee {}, a spawner {}\n".format(espece.ID, fitness_ajustee[espece], qte)
+        s+='----/\n'
+
+
         self.population = []
 
         for espece in self.set_especes.especes:
-            membre_trie = sorted(espece.membres, key=attrgetter('fitness'), reverse=True)
-            a_enlever = int(0.2 * len(membre_trie))
-            pour_repro = membre_trie[:len(membre_trie)-a_enlever]
+            if len(espece.membres) <= 0 : continue
+            membre_trie = sorted(espece.membres, reverse=True, key=lambda x: x.fitness)
+            a_garder = int(0.6 * len(membre_trie))
+            if a_garder == 0 : continue
+            pour_repro = membre_trie[:a_garder]
             nouvelle_espece = []
             for i in range(a_spawner[espece]):
                 parent1 = choice(pour_repro)
@@ -117,6 +144,8 @@ class Population:
             self.population.extend(nouvelle_espece)
 
         self.set_especes.speciation(self.population)
+
+        return s
 
     def evaluer_fitness(self, fitness_fonction):
         for p in self.population:

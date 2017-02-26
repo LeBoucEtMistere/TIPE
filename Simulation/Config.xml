@@ -34,8 +34,8 @@
     </parametres_genetiques>
 
     <compatibilite_genotypes>
-        <seuil_compatibilite>1</seuil_compatibilite>
-        <coeff_poids>0.4</coeff_poids>
+        <seuil_compatibilite>2</seuil_compatibilite>
+        <coeff_poids>0.5</coeff_poids>
         <coeff_exces>1</coeff_exces>
         <coeff_disjoints>1</coeff_disjoints>
     </compatibilite_genotypes>
