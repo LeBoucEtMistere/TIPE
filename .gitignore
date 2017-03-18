@@ -2,3 +2,6 @@
 Jeu/__pycache__
 Config.pyc
 *.pyc
+Simulation/ReseauNeural/__pycache__/
+*.svg
+neat-checkpoint-*
