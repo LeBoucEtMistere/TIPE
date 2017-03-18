@@ -27,8 +27,9 @@ KEY_LEFT = "'q'"
 KEY_RIGHT = "'d'"
 
 
-class GameGrid:
+class GraphicGameGrid:
     def __init__(self, master):
+
         self.master = master
         self.master.title("2048")
 
@@ -45,6 +46,8 @@ class GameGrid:
         self.init_matrix()
         self.update_grid_cells()
         self.placerFenetre()
+
+
 
     def placerFenetre(self):
 
@@ -76,14 +79,12 @@ class GameGrid:
 
             self.grid_cells.append(grid_row)
 
-    def gen(self):
-        return randint(0, GRID_LEN - 1)
 
     def init_matrix(self):
         self.matrix = new_game(4)
 
-        self.matrix = add_two(self.matrix)
-        self.matrix = add_two(self.matrix)
+        generate_next(self.matrix)
+        generate_next(self.matrix)
 
     def update_grid_cells(self):
         for i in range(GRID_LEN):
@@ -101,19 +102,15 @@ class GameGrid:
         if key in self.commands:
             self.matrix, done = self.commands[repr(event.char)](self.matrix)
             if done:
-                self.matrix = add_two(self.matrix)
+                generate_next(self.matrix)
                 self.update_grid_cells()
                 done = False
-                if game_state(self.matrix) == 'self.master':
+                if game_state(self.matrix) == 'win':
                     self.grid_cells[1][1].configure(text="You", bg=BACKGROUND_COLOR_CELL_EMPTY)
-                    self.grid_cells[1][2].configure(text="self.master!", bg=BACKGROUND_COLOR_CELL_EMPTY)
+                    self.grid_cells[1][2].configure(text="Win!", bg=BACKGROUND_COLOR_CELL_EMPTY)
                 if game_state(self.matrix) == 'lose':
                     self.grid_cells[1][1].configure(text="You", bg=BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(text="Lose!", bg=BACKGROUND_COLOR_CELL_EMPTY)
 
-    def generate_next(self):
-        index = (self.gen(), self.gen())
-        while self.matrix[index[0]][index[1]] != 0:
-            index = (self.gen(), self.gen())
-        self.matrix[index[0]][index[1]] = 2
+
 

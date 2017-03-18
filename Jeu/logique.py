@@ -1,4 +1,6 @@
-from random import *
+from random import randint, random
+
+GRID_LEN = 4
 
 
 def new_game(n):
@@ -9,20 +11,21 @@ def new_game(n):
     return matrix
 
 
-def add_two(mat):
-    a = randint(0, len(mat) - 1)
-    b = randint(0, len(mat) - 1)
-    while mat[a][b] != 0:
-        a = randint(0, len(mat) - 1)
-        b = randint(0, len(mat) - 1)
-    mat[a][b] = 2
-    return mat
+def gen():
+    return randint(0, GRID_LEN - 1)
+
+
+def generate_next(matrix):
+    index = (gen(), gen())
+    while matrix[index[0]][index[1]] != 0:
+        index = (gen(), gen())
+    matrix[index[0]][index[1]] = (2 if random() < 0.5 else 4)
 
 
 def game_state(mat):
     for i in range(len(mat)):
         for j in range(len(mat[0])):
-            if mat[i][j] == 2048:
+            if mat[i][j] == 256:
                 return 'win'
     for i in range(len(mat) - 1):  # intentionally reduced to check the row on the right and below
         for j in range(len(mat[0]) - 1):  # more elegant to use exceptions but most likely this will be their solution
@@ -85,7 +88,6 @@ def merge(mat):
 
 
 def up(game):
-    # print("up")
     # return matrix after shifting up
     game = transpose(game)
     game, done = cover_up(game)
@@ -94,11 +96,11 @@ def up(game):
     done = done or temp[1]
     game = cover_up(game)[0]
     game = transpose(game)
-    return (game, done)
+    return game, done
 
 
 def down(game):
-    # print("down")
+    # return matrix after shifting down
     game = reverse(transpose(game))
     game, done = cover_up(game)
     temp = merge(game)
@@ -110,7 +112,6 @@ def down(game):
 
 
 def left(game):
-    # print("left")
     # return matrix after shifting left
     game, done = cover_up(game)
     temp = merge(game)
@@ -121,7 +122,6 @@ def left(game):
 
 
 def right(game):
-    # print("right")
     # return matrix after shifting right
     game = reverse(game)
     game, done = cover_up(game)
