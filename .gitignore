@@ -5,3 +5,4 @@ Config.pyc
 Simulation/ReseauNeural/__pycache__/
 *.svg
 neat-checkpoint-*
+neat/*
