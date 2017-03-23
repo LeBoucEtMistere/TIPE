@@ -1,11 +1,15 @@
 import neat
 from math import log2
+from time import gmtime, strftime
 
-NBR_GENERATIONS = 100
+NBR_GENERATIONS = 2
 
 import Jeu.puzzleIA
 
 import Jeu.visualize
+
+import os
+import pickle
 
 def eval_genome(genome, puzzle, config):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
@@ -97,7 +101,7 @@ def eval_fitness(genomes, config):
         somme = pzl.compter_somme()
         genome.fitness = somme + 50 * vides
 
-def run(config):
+def run(config, nbrGen):
 
     # Create the population, which is the top-level object for a NEAT run.
     p = neat.Population(config)
@@ -109,13 +113,17 @@ def run(config):
     p.add_reporter(neat.Checkpointer(100))
 
     # Run for up to n generations.
-    winner = p.run(eval_fitness, NBR_GENERATIONS)
+    winner = p.run(eval_fitness, nbrGen)
 
+    path = 'winner-feedforward({})_'.format(winner.fitness) + strftime("%Y-%m-%d %H_%M_%S", gmtime()) + '.genome'
+    with open(path, 'wb') as f:
+        pickle.dump(winner, f)
+    
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
-
-    Jeu.visualize.plot_stats(stats, ylog=False)
-    Jeu.visualize.plot_species(stats)
+    
+    #Jeu.visualize.plot_stats(stats, ylog=False)
+    #Jeu.visualize.plot_species(stats)
 
     return winner
 

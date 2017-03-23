@@ -40,6 +40,8 @@ class GraphicGameGrid:
 
         self.commands = {KEY_UP: up, KEY_DOWN: down, KEY_LEFT: left, KEY_RIGHT: right,
                          KEY_UP_ALT: up, KEY_DOWN_ALT: down, KEY_LEFT_ALT: left, KEY_RIGHT_ALT: right}
+                         
+        self.commandsIA = {'up': up, 'down': down, 'left': left, 'right': right}
 
         self.grid_cells = []
         self.init_grid()
@@ -47,7 +49,8 @@ class GraphicGameGrid:
         self.update_grid_cells()
         self.placerFenetre()
 
-
+    def etat(self):
+        return game_state(self.matrix)
 
     def placerFenetre(self):
 
@@ -97,20 +100,41 @@ class GraphicGameGrid:
                                                     fg=CELL_COLOR_DICT[new_number])
         self.frame.update_idletasks()
 
-    def key_down(self, event):
-        key = repr(event.char)
-        if key in self.commands:
-            self.matrix, done = self.commands[repr(event.char)](self.matrix)
-            if done:
-                generate_next(self.matrix)
-                self.update_grid_cells()
-                done = False
-                if game_state(self.matrix) == 'win':
-                    self.grid_cells[1][1].configure(text="You", bg=BACKGROUND_COLOR_CELL_EMPTY)
-                    self.grid_cells[1][2].configure(text="Win!", bg=BACKGROUND_COLOR_CELL_EMPTY)
-                if game_state(self.matrix) == 'lose':
-                    self.grid_cells[1][1].configure(text="You", bg=BACKGROUND_COLOR_CELL_EMPTY)
-                    self.grid_cells[1][2].configure(text="Lose!", bg=BACKGROUND_COLOR_CELL_EMPTY)
+    def key_down(self, event, IA=False):
+        if not IA:
+            key = repr(event.char)
+            if key in self.commands:
+                self.matrix, done = self.commands[repr(event.char)](self.matrix)
+                if done:
+                    generate_next(self.matrix)
+                    self.update_grid_cells()
+                    done = False
+                    if game_state(self.matrix) == 'win':
+                        self.grid_cells[1][1].configure(text="You", bg=BACKGROUND_COLOR_CELL_EMPTY)
+                        self.grid_cells[1][2].configure(text="Win!", bg=BACKGROUND_COLOR_CELL_EMPTY)
+                        return 1
+                    if game_state(self.matrix) == 'lose':
+                        self.grid_cells[1][1].configure(text="You", bg=BACKGROUND_COLOR_CELL_EMPTY)
+                        self.grid_cells[1][2].configure(text="Lose!", bg=BACKGROUND_COLOR_CELL_EMPTY)
+                        return 0
+                else: return -1
+        else:
+            if event in self.commandsIA:
+                self.matrix, done = self.commandsIA[event](self.matrix)
+                if done:
+                    generate_next(self.matrix)
+                    self.update_grid_cells()
+                    done = False
+                    if self.etat == 'win':
+                        self.grid_cells[1][1].configure(text="You", bg=BACKGROUND_COLOR_CELL_EMPTY)
+                        self.grid_cells[1][2].configure(text="Win!", bg=BACKGROUND_COLOR_CELL_EMPTY)
+                        return 1
+                    elif self.etat == 'lose':
+                        self.grid_cells[1][1].configure(text="You", bg=BACKGROUND_COLOR_CELL_EMPTY)
+                        self.grid_cells[1][2].configure(text="Lose!", bg=BACKGROUND_COLOR_CELL_EMPTY)
+                        return 0
+                else:
+                    return -1
 
 
 

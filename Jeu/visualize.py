@@ -3,7 +3,7 @@ from __future__ import print_function
 import copy
 import warnings
 
-import graphviz
+#import graphviz
 import matplotlib
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
