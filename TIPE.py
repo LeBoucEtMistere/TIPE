@@ -3,24 +3,26 @@
 import tkinter as tk
 import tkinter.filedialog as fd
 import tkinter.simpledialog as sd
+
 import Jeu.puzzle as pzl
 import Jeu.puzzleIA as iapzl
 
-import time
+from numpy import array
 
-import numpy as np
+from time import gmtime, strftime
 
 import Jeu.entrainement
+import Jeu.IA
 
 import os
-from math import log2
 import pickle
 
 import neat
 
-
 class Demo1:
     def __init__(self, master):
+
+        ## UI RELATED ##
 
         self.file_opt = options = {}
         options['parent'] = master
@@ -33,17 +35,15 @@ class Demo1:
         f1 = tk.Frame(self.master)
         f1.pack(side=tk.LEFT)
 
-        l1 = tk.LabelFrame(f1, text="Commandes generales", padx=20, pady=20)
+        l1 = tk.LabelFrame(f1, text="Commandes générales", padx=20, pady=20)
         l1.pack(fill="both", expand="yes")
 
-        l2 = tk.LabelFrame(f1, text="Controles de l'AI", padx=20, pady=20)
+        l2 = tk.LabelFrame(f1, text="Contrôles de l'AI", padx=20, pady=20)
         l2.pack(fill="both", expand="yes")
 
-        l3 = tk.LabelFrame(self.master, text="Statistiques", padx=20, pady=20)
+        l3 = tk.LabelFrame(self.master, text="Informations sur le génome", padx=20, pady=20)
         l3.pack(fill="both", expand="yes", side=tk.LEFT)
 
-        tk.Label(l2, text="A l'interieure de la frame 2").pack()
-        tk.Label(l3, text="A l'interieure de la frame 3").pack()
 
         self.bouton_simulation = tk.Button(l1, text='Lancer la simulation', width=20, command = self.entrainer_IA)
         self.bouton_simulation.pack()
@@ -51,102 +51,127 @@ class Demo1:
         self.bouton_jouer_2048 = tk.Button(l1, text = 'Jouer au 2048', width = 20, command = self.jouer_2048)
         self.bouton_jouer_2048.pack()
 
-        self.bouton_jouer_2048_IA = tk.Button(l1, text='Faire jouer l\'IA au 2048', width=20, command=self.IA_jouer_2048)
-        self.bouton_jouer_2048_IA.pack()
+
 
         self.bouton_quitter = tk.Button(l1, text='Quitter', width=20, command=self.quitter)
         self.bouton_quitter.pack()
 
+
+        self.var_nom_genome = tk.StringVar(value="Pas de génome chargé")
+        self.label_ia_charge = tk.Label(l2, textvar=self.var_nom_genome)
+        self.label_ia_charge.pack()
+
+        self.bouton_charger_genome = tk.Button(l2, text='Charger un genome', width=20, command=self.demande_charger_genome)
+        self.bouton_charger_genome.pack()
+
+        self.bouton_jouer_2048_IA = tk.Button(l2, text='Faire jouer l\'IA au 2048', width=20, command=self.IA_jouer_2048)
+        self.bouton_jouer_2048_IA.pack()
+
+        self.var_checkbox_ia_visuelle = tk.IntVar()
+        self.checkbox_ia_visuelle = tk.Checkbutton(l2, text="Jouer en mode visuel", variable=self.var_checkbox_ia_visuelle)
+        self.checkbox_ia_visuelle.pack()
+
+        self.var_fitness = tk.StringVar(value="Fitness du génome : NA")
+        self.fitness_label = tk.Label(l3, textvar=self.var_fitness)
+        self.fitness_label.pack()
+
+        self.var_nbr_noeuds = tk.StringVar(value="Nombre de nœuds : NA")
+        self.nbr_noeuds_label = tk.Label(l3, textvar=self.var_nbr_noeuds)
+        self.nbr_noeuds_label.pack()
+
+        self.var_nbr_connections = tk.StringVar(value="Nombre de connexions : NA")
+        self.nbr_connections_label = tk.Label(l3, textvar=self.var_nbr_connections)
+        self.nbr_connections_label.pack()
+
+
+
+        ## DATA RELATED ##
+
+        self.genome_charge = None
+
+    def demande_charger_genome(self):
+        filename = fd.askopenfilename(**self.file_opt)
+        self.charger_genome_depuis_fichier(filename)
+
+    def charger_genome_depuis_fichier(self, fichier):
+        if fichier != "":
+            with open(fichier, 'rb') as f:
+                self.genome_charge = pickle.load(f)
+            nom_genome = os.path.splitext(os.path.basename(fichier))[0]
+
+            self.var_nom_genome.set("Genome chargé : " + nom_genome)
+            self.var_fitness.set("Fitness du génome : {}".format(self.genome_charge.fitness))
+            self.var_nbr_noeuds.set("Nombre de nœud(s) : {}".format(len(self.genome_charge.connections)))
+            self.var_nbr_connections.set("Nombre de connexion(s) : {}".format(len(self.genome_charge.nodes)))
+        else:
+            raise Exception("Chemin au fichier invalide")
 
     def jouer_2048(self):
         self.fenetre = tk.Toplevel(self.master)
         self.app = pzl.GraphicGameGrid(self.fenetre)
 
     def IA_jouer_2048(self):
-        filename = fd.askopenfilename(**self.file_opt)
-        if filename != "":
+
+        interface = 'visuelle' if self.var_checkbox_ia_visuelle.get() else 'console'
+
+        if interface == 'visuelle':
             self.fenetre = tk.Toplevel(self.master)
             puzzle = pzl.GraphicGameGrid(self.fenetre)
-            
-            with open(filename, 'rb') as f:
-                genome = pickle.load(f)
-            print('Loaded genome:')
-            print(genome)
-            
-            local_dir = os.path.dirname(__file__)
-            config_path = os.path.join(local_dir, 'config-feedforward')
-            config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                     neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                     config_path)
-            
-            net = neat.nn.FeedForwardNetwork.create(genome, config)
-            
-            actions = {0: 'up', 1: 'down', 2: 'right', 3: 'left'}
-            
-            continuer = True
-            
-            while continuer:
-                #On récupère les entrées et on les normalise
-                mat = puzzle.matrix
-                entrees = []
-                for x in mat:
-                    for y in x:
-                        entrees.append(int(log2(y)) if y!=0 else 0)
-                maximum = max(entrees)
-                entrees = [x/maximum for x in entrees]
-        
-                #On active le réseau de neurone sur les entrees
-                out = net.activate(entrees)
-        
-                #On récupère les mouvements dans l'ordre et on les teste tous
-                sorties = {i: x for i, x in zip(range(4), out)}
-                sorties = sorted(sorties.items(), key=lambda x: x[1], reverse=True)
-        
-                i = 0
-                puzzle.master.update()
-                time.sleep(0.2)
-                b = puzzle.key_down(actions[sorties[0][0]],IA=True)
-        
-                if b == 0 or b == 1: break
-        
-                while b == -1:
-                    i += 1
-                    if i > 3:
-                        # aucun mouvement n'est légal
-                        continuer = False
-                        print("Partie Finie")
-                        break
-        
-                    b = puzzle.key_down(actions[sorties[i][0]],IA=True)
-        
-                if b == 0 or b == 1: break
+        elif interface == 'console':
+            puzzle = iapzl.IAGameGrid()
 
-    def entrainer_IA(self):
-        print('entrainement IA')
-        
-        nbrGen = sd.askinteger('Nombre de générations', 'Combien de générations ?')
+        if self.genome_charge == None:
+            self.demande_charger_genome()
+            if self.genome_charge == None :
+                raise Exception("Impossible de charger un genome")
 
         local_dir = os.path.dirname(__file__)
         config_path = os.path.join(local_dir, 'config-feedforward')
 
-        config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                             neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                             config_path)
 
-        winner = Jeu.entrainement.run(config,nbrGen)
+        Jeu.IA.faire_jouer_IA(self.genome_charge, config_path, puzzle, interface)
 
-        pzl=Jeu.entrainement.faire_jouer_genome(winner,config)
-        print(np.array(pzl.matrix))
-        print(pzl.compter_somme())
+        if interface == "console":
+            print(array(puzzle.matrix))
+            print("Score pour cette grille : {}".format(puzzle.compter_somme()))
 
-        pzl2 = Jeu.entrainement.faire_jouer_genome(winner, config)
-        print(np.array(pzl2.matrix))
-        print(pzl2.compter_somme())
+
+    def entrainer_IA(self):
+        print('entrainement IA')
+
+        interface = 'visuelle' if self.var_checkbox_ia_visuelle.get() else 'console'
+        
+        nbrGen = sd.askinteger('Nombre de générations', 'Combien de générations ?')
+
+        dossier_local = os.path.dirname(__file__)
+        chemin_config = os.path.join(dossier_local, 'config-feedforward')
+
+        winner = Jeu.entrainement.run(chemin_config, nbrGen)
+
+        dossier = os.path.join(dossier_local,'Genomes')
+        nom_fichier = 'winner-feedforward({})_'.format(winner.fitness) + strftime("%Y-%m-%d %H_%M_%S", gmtime()) + '.genome'
+        chemin = os.path.join(dossier, nom_fichier)
+
+        with open(chemin, 'wb') as f:
+            pickle.dump(winner, f)
+            print("Gagnant sauvegardé sous : ")
+            print(chemin)
+
+        self.charger_genome_depuis_fichier(chemin)
+
+        if interface == "console":
+            puzzle = Jeu.puzzleIA.IAGameGrid()
+            Jeu.IA.faire_jouer_IA(winner, chemin_config, puzzle, interface)
+            print(array(puzzle.matrix))
+            print("Score pour cette grille : {}".format(puzzle.compter_somme()))
+        elif interface == 'visuelle':
+            self.fenetre = tk.Toplevel(self.master)
+            puzzle = pzl.GraphicGameGrid(self.fenetre)
+            Jeu.IA.faire_jouer_IA(winner, chemin_config, puzzle, interface)
 
     def quitter(self):
 
         self.master.destroy()
-
 
 def main():
     root = tk.Tk()
