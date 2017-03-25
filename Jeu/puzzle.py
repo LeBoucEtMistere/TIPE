@@ -1,6 +1,5 @@
 import tkinter as tk
 from Jeu.logique import *
-from random import *
 
 SIZE = 500
 GRID_LEN = 4
