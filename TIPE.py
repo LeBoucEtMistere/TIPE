@@ -90,8 +90,8 @@ class Demo1:
         self.nbr_connections_label.pack()
         
         self.var_entrainement_report = tk.StringVar(value="Info")
-        self.entrainement_report_label = tk.Label(l4, textvar = self.var_entrainement_report)
-        self.entrainement_report_label.pack()
+        self.entrainement_report_text = tk.Text(l4, textvar = self.var_entrainement_report)
+        self.entrainement_report_text.pack()
 
 
 
