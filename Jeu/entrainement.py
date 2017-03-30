@@ -4,6 +4,7 @@ from math import log2
 import Jeu.puzzleIA
 
 import Jeu.visualize
+from Jeu.reporters import VarReporter
 
 
 def eval_fitness(genomes, config):
@@ -55,7 +56,7 @@ def eval_fitness(genomes, config):
         somme = pzl.compter_somme()
         genome.fitness = somme + 50 * vides
 
-def run(config_path, nbrGen):
+def run(config_path, nbrGen, report_var):
 
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
@@ -66,6 +67,7 @@ def run(config_path, nbrGen):
 
     # Add a stdout reporter to show progress in the terminal.
     p.add_reporter(neat.StdOutReporter(True))
+    p.add_reporter(VarReporter(True, report_var))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
     p.add_reporter(neat.Checkpointer(100))

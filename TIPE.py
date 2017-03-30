@@ -32,17 +32,23 @@ class Demo1:
 
         self.master.title("Simulation de 2048")
 
-        f1 = tk.Frame(self.master)
-        f1.pack(side=tk.LEFT)
+        #f1 = tk.Frame(self.master)
+        #f1.pack(side=tk.LEFT)
+        
+        #f2 = tk.Frame(self.master)
+        #f2.pack(side=tk.RIGHT)
 
-        l1 = tk.LabelFrame(f1, text="Commandes générales", padx=20, pady=20)
-        l1.pack(fill="both", expand="yes")
+        l1 = tk.LabelFrame(self.master, text="Commandes générales", padx=20, pady=20)
+        l1.grid(row=0, column=0)
 
-        l2 = tk.LabelFrame(f1, text="Contrôles de l'AI", padx=20, pady=20)
-        l2.pack(fill="both", expand="yes")
+        l2 = tk.LabelFrame(self.master, text="Contrôles de l'AI", padx=20, pady=20)
+        l2.grid(row=1, column=0)
 
         l3 = tk.LabelFrame(self.master, text="Informations sur le génome", padx=20, pady=20)
-        l3.pack(fill="both", expand="yes", side=tk.LEFT)
+        l3.grid(row=0, column=1)
+        
+        l4 = tk.LabelFrame(self.master, text="Informations sur l'entrainement", padx=20, pady=20)
+        l4.grid(row=1, column=1)
 
 
         self.bouton_simulation = tk.Button(l1, text='Lancer la simulation', width=20, command = self.entrainer_IA)
@@ -82,6 +88,10 @@ class Demo1:
         self.var_nbr_connections = tk.StringVar(value="Nombre de connexions : NA")
         self.nbr_connections_label = tk.Label(l3, textvar=self.var_nbr_connections)
         self.nbr_connections_label.pack()
+        
+        self.var_entrainement_report = tk.StringVar(value="Info")
+        self.entrainement_report_label = tk.Label(l4, textvar = self.var_entrainement_report)
+        self.entrainement_report_label.pack()
 
 
 
@@ -146,7 +156,7 @@ class Demo1:
         dossier_local = os.path.dirname(__file__)
         chemin_config = os.path.join(dossier_local, 'config-feedforward')
 
-        winner = Jeu.entrainement.run(chemin_config, nbrGen)
+        winner = Jeu.entrainement.run(chemin_config, nbrGen, self.var_entrainement_report)
 
         dossier = os.path.join(dossier_local,'Genomes')
         nom_fichier = 'winner-feedforward({})_'.format(winner.fitness) + strftime("%Y-%m-%d %H_%M_%S", gmtime()) + '.genome'
