@@ -1,6 +1,7 @@
 # Ce fichier gere le programme de simulation dans son ensemble, en lancant le jeu et en controlant l'AI
 
 import tkinter as tk
+from tkinter import font
 import tkinter.filedialog as fd
 import tkinter.simpledialog as sd
 
@@ -19,8 +20,6 @@ import Jeu.IA
 
 import os
 import pickle
-
-from os import system
 from platform import system as platform
 
 import neat
@@ -47,7 +46,7 @@ class Demo1:
         l3 = tk.LabelFrame(self.master, text="Informations sur le génome", padx=20, pady=20)
         l3.grid(row=0, column=1, sticky=tk.W+tk.E+tk.N+tk.S, padx=10, pady=10)
         
-        l4 = tk.LabelFrame(self.master, text="Informations sur l'entrainement", padx=20, pady=20)
+        l4 = tk.LabelFrame(self.master, text="Informations sur l'entraînement", padx=20, pady=20)
         l4.grid(row=1, column=1, sticky=tk.W+tk.E+tk.N+tk.S, padx=10, pady=10)
 
 
@@ -61,7 +60,7 @@ class Demo1:
         self.bouton_quitter.pack()
 
         self.var_checkbox_calculs_paralleles = tk.IntVar()
-        self.checkbox_calculs_paralleles = tk.Checkbutton(l1, text="Calculs en parallele", variable =self.var_checkbox_calculs_paralleles)
+        self.checkbox_calculs_paralleles = tk.Checkbutton(l1, text="Calculs en parallèle", variable =self.var_checkbox_calculs_paralleles)
         self.checkbox_calculs_paralleles.pack()
         self.var_checkbox_calculs_paralleles.set(1)
 
@@ -91,10 +90,32 @@ class Demo1:
         self.var_nbr_connections = tk.StringVar(value="Nombre de connexions : NA")
         self.nbr_connections_label = tk.Label(l3, textvar=self.var_nbr_connections)
         self.nbr_connections_label.pack()
-        
-        self.var_entrainement_report = tk.StringVar(value="Info")
-        self.entrainement_report_text = tk.Label(l4, textvar = self.var_entrainement_report)
-        self.entrainement_report_text.pack()
+
+        self.var_entrainement_etat = tk.StringVar(value="Pas d'entraînement en cours")
+        self.entrainement_report_etat = tk.Label(l4, textvar=self.var_entrainement_etat)
+        f = font.Font(self.entrainement_report_etat, self.entrainement_report_etat.cget("font"))
+        f.configure(underline=True)
+        self.entrainement_report_etat.configure(font=f)
+        self.entrainement_report_etat.pack()
+
+        self.var_entrainement_pre = tk.StringVar(value="")
+        self.entrainement_report_pre = tk.Label(l4, textvar = self.var_entrainement_pre)
+        self.entrainement_report_pre.pack()
+
+        self.var_entrainement_post = tk.StringVar(value="")
+        self.entrainement_report_post = tk.Label(l4, textvar=self.var_entrainement_post)
+        self.entrainement_report_post.pack()
+
+        self.var_entrainement_end = tk.StringVar(value="")
+        self.entrainement_report_end = tk.Label(l4, textvar=self.var_entrainement_end)
+        self.entrainement_report_end.pack()
+
+        self.var_entrainement_msg = tk.StringVar(value="")
+        self.entrainement_report_msg = tk.Label(l4, textvar=self.var_entrainement_msg)
+        self.entrainement_report_msg.pack()
+
+
+
 
 
         ## DATA RELATED ##
@@ -115,12 +136,12 @@ class Demo1:
                 self.genome_charge = pickle.load(f)
             nom_genome = os.path.splitext(os.path.basename(fichier))[0]
 
-            self.var_nom_genome.set("Genome chargé : " + nom_genome)
+            self.var_nom_genome.set("Génome chargé : " + nom_genome)
             self.var_fitness.set("Fitness du génome : {}".format(self.genome_charge.fitness))
             self.var_nbr_noeuds.set("Nombre de nœud(s) : {}".format(len(self.genome_charge.connections)))
             self.var_nbr_connections.set("Nombre de connexion(s) : {}".format(len(self.genome_charge.nodes)))
         else:
-            raise Exception("Chemin au fichier invalide")
+            raise Exception("Chemin de fichier invalide")
 
     def jouer_2048(self):
         self.fenetre = tk.Toplevel(self.master)
@@ -161,19 +182,18 @@ class Demo1:
 
         self.thread_entrainement = threading.Thread(target = Jeu.entrainement.run, args= (chemin_config,
                                                                                           nbrGen,
-                                                                                          self.var_entrainement_report,
+                                                                                          [self.var_entrainement_pre, self.var_entrainement_post, self.var_entrainement_end],
                                                                                           self.var_checkbox_calculs_paralleles,
                                                                                           self.entrainement_fini))
         self.thread_entrainement.start()
+        self.var_entrainement_etat.set("Entraînement en cours")
         self.bouton_simulation.config(state="disabled")
         self.bouton_quitter.config(state="disabled")
 
 
     def entrainement_fini(self, winner):
 
-        txt = self.var_entrainement_report.get()
-        txt += "\nEntraînement fini\n"
-        self.var_entrainement_report.set(txt)
+        self.var_entrainement_etat.set("Entraînement fini")
 
         dossier_local = os.path.dirname(__file__)
 
@@ -183,9 +203,7 @@ class Demo1:
 
         with open(chemin, 'wb') as f:
             pickle.dump(winner, f)
-            txt = self.var_entrainement_report.get()
-            txt += "\nGagnant sauvegardé sous : \n{0}\n".format(os.path.join('Genome',nom_fichier))
-            self.var_entrainement_report.set(txt)
+            self.var_entrainement_msg.set("Génome sauvegardé sous : \n{0}".format(os.path.join('Genome',nom_fichier)))
 
         self.charger_genome_depuis_fichier(chemin)
 
@@ -213,7 +231,7 @@ def main():
     root = tk.Tk()
     app = Demo1(root)
     if platform() == 'Darwin':  # How Mac OS X is identified by Python
-        system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "Python" to true' ''')
+        os.system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "Python" to true' ''')
     root.mainloop()
 
 if __name__ == '__main__':
