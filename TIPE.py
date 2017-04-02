@@ -7,8 +7,6 @@ import tkinter.simpledialog as sd
 import queue
 import threading
 
-from multiprocessing import Process, Queue
-
 import Jeu.puzzle as pzl
 import Jeu.puzzleIA as iapzl
 
@@ -21,6 +19,9 @@ import Jeu.IA
 
 import os
 import pickle
+
+from os import system
+from platform import system as platform
 
 import neat
 
@@ -211,6 +212,8 @@ class Demo1:
 def main():
     root = tk.Tk()
     app = Demo1(root)
+    if platform() == 'Darwin':  # How Mac OS X is identified by Python
+        system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "Python" to true' ''')
     root.mainloop()
 
 if __name__ == '__main__':
