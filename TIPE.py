@@ -39,16 +39,16 @@ class Demo1:
         #f2.pack(side=tk.RIGHT)
 
         l1 = tk.LabelFrame(self.master, text="Commandes générales", padx=20, pady=20)
-        l1.grid(row=0, column=0)
+        l1.grid(row=0, column=0, sticky=tk.W+tk.E+tk.N+tk.S)
 
         l2 = tk.LabelFrame(self.master, text="Contrôles de l'AI", padx=20, pady=20)
-        l2.grid(row=1, column=0)
+        l2.grid(row=1, column=0, sticky=tk.W+tk.E+tk.N+tk.S)
 
         l3 = tk.LabelFrame(self.master, text="Informations sur le génome", padx=20, pady=20)
-        l3.grid(row=0, column=1)
+        l3.grid(row=0, column=1, sticky=tk.W+tk.E+tk.N+tk.S)
         
         l4 = tk.LabelFrame(self.master, text="Informations sur l'entrainement", padx=20, pady=20)
-        l4.grid(row=1, column=1)
+        l4.grid(row=1, column=1, sticky=tk.W+tk.E+tk.N+tk.S)
 
 
         self.bouton_simulation = tk.Button(l1, text='Lancer la simulation', width=20, command = self.entrainer_IA)
@@ -57,10 +57,12 @@ class Demo1:
         self.bouton_jouer_2048 = tk.Button(l1, text = 'Jouer au 2048', width = 20, command = self.jouer_2048)
         self.bouton_jouer_2048.pack()
 
-
-
         self.bouton_quitter = tk.Button(l1, text='Quitter', width=20, command=self.quitter)
         self.bouton_quitter.pack()
+
+        self.var_checkbox_calculs_paralleles = tk.IntVar()
+        self.checkbox_calculs_paralleles = tk.Checkbutton(l1, text="Calculs en parallele", variable =self.var_checkbox_calculs_paralleles)
+        self.checkbox_calculs_paralleles.pack()
 
 
         self.var_nom_genome = tk.StringVar(value="Pas de génome chargé")
@@ -90,7 +92,7 @@ class Demo1:
         self.nbr_connections_label.pack()
         
         self.var_entrainement_report = tk.StringVar(value="Info")
-        self.entrainement_report_text = tk.Text(l4, textvar = self.var_entrainement_report)
+        self.entrainement_report_text = tk.Label(l4, textvar = self.var_entrainement_report)
         self.entrainement_report_text.pack()
 
 
@@ -156,7 +158,7 @@ class Demo1:
         dossier_local = os.path.dirname(__file__)
         chemin_config = os.path.join(dossier_local, 'config-feedforward')
 
-        winner = Jeu.entrainement.run(chemin_config, nbrGen, self.var_entrainement_report)
+        winner = Jeu.entrainement.run(chemin_config, nbrGen, self.var_entrainement_report, self.master, self.var_checkbox_calculs_paralleles.get())
 
         dossier = os.path.join(dossier_local,'Genomes')
         nom_fichier = 'winner-feedforward({})_'.format(winner.fitness) + strftime("%Y-%m-%d %H_%M_%S", gmtime()) + '.genome'
