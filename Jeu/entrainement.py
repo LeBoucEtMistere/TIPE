@@ -58,9 +58,8 @@ def eval_fitness(genomes, config):
         genome.fitness = eval_fitness_simple(genome, config)
 
 
-def run(config_path, nbrGen, report_var, root, parallele):
+def run(config_path, nbrGen, report_var, parallele, callback):
 
-    if parallele : print("parallele")
 
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
@@ -70,10 +69,10 @@ def run(config_path, nbrGen, report_var, root, parallele):
     p = neat.Population(config)
 
     # Add a stdout reporter to show progress in the terminal.
-    p.add_reporter(neat.StdOutReporter(True))
-    p.add_reporter(VarReporter(True, report_var, root))
-    stats = neat.StatisticsReporter()
-    p.add_reporter(stats)
+    #p.add_reporter(neat.StdOutReporter(True))
+    p.add_reporter(VarReporter(False, report_var))
+    #stats = neat.StatisticsReporter()
+    #p.add_reporter(stats)
     p.add_reporter(neat.Checkpointer(100))
 
     winner = None
@@ -88,5 +87,5 @@ def run(config_path, nbrGen, report_var, root, parallele):
     #Jeu.visualize.plot_stats(stats, ylog=False)
     #Jeu.visualize.plot_species(stats)
 
-    return winner
+    return callback(winner)
 

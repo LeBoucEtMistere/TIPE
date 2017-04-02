@@ -4,6 +4,11 @@ import tkinter as tk
 import tkinter.filedialog as fd
 import tkinter.simpledialog as sd
 
+import queue
+import threading
+
+from multiprocessing import Process, Queue
+
 import Jeu.puzzle as pzl
 import Jeu.puzzleIA as iapzl
 
@@ -32,23 +37,17 @@ class Demo1:
 
         self.master.title("Simulation de 2048")
 
-        #f1 = tk.Frame(self.master)
-        #f1.pack(side=tk.LEFT)
-        
-        #f2 = tk.Frame(self.master)
-        #f2.pack(side=tk.RIGHT)
-
         l1 = tk.LabelFrame(self.master, text="Commandes générales", padx=20, pady=20)
-        l1.grid(row=0, column=0, sticky=tk.W+tk.E+tk.N+tk.S)
+        l1.grid(row=0, column=0, sticky=tk.W+tk.E+tk.N+tk.S, padx=10, pady=10)
 
         l2 = tk.LabelFrame(self.master, text="Contrôles de l'AI", padx=20, pady=20)
-        l2.grid(row=1, column=0, sticky=tk.W+tk.E+tk.N+tk.S)
+        l2.grid(row=1, column=0, sticky=tk.W+tk.E+tk.N+tk.S, padx=10, pady=10)
 
         l3 = tk.LabelFrame(self.master, text="Informations sur le génome", padx=20, pady=20)
-        l3.grid(row=0, column=1, sticky=tk.W+tk.E+tk.N+tk.S)
+        l3.grid(row=0, column=1, sticky=tk.W+tk.E+tk.N+tk.S, padx=10, pady=10)
         
         l4 = tk.LabelFrame(self.master, text="Informations sur l'entrainement", padx=20, pady=20)
-        l4.grid(row=1, column=1, sticky=tk.W+tk.E+tk.N+tk.S)
+        l4.grid(row=1, column=1, sticky=tk.W+tk.E+tk.N+tk.S, padx=10, pady=10)
 
 
         self.bouton_simulation = tk.Button(l1, text='Lancer la simulation', width=20, command = self.entrainer_IA)
@@ -63,6 +62,7 @@ class Demo1:
         self.var_checkbox_calculs_paralleles = tk.IntVar()
         self.checkbox_calculs_paralleles = tk.Checkbutton(l1, text="Calculs en parallele", variable =self.var_checkbox_calculs_paralleles)
         self.checkbox_calculs_paralleles.pack()
+        self.var_checkbox_calculs_paralleles.set(1)
 
 
         self.var_nom_genome = tk.StringVar(value="Pas de génome chargé")
@@ -96,10 +96,13 @@ class Demo1:
         self.entrainement_report_text.pack()
 
 
-
         ## DATA RELATED ##
 
         self.genome_charge = None
+
+        self.thread_entrainement = None
+
+
 
     def demande_charger_genome(self):
         filename = fd.askopenfilename(**self.file_opt)
@@ -149,16 +152,29 @@ class Demo1:
 
 
     def entrainer_IA(self):
-        print('entrainement IA')
-
-        interface = 'visuelle' if self.var_checkbox_ia_visuelle.get() else 'console'
         
         nbrGen = sd.askinteger('Nombre de générations', 'Combien de générations ?')
 
         dossier_local = os.path.dirname(__file__)
         chemin_config = os.path.join(dossier_local, 'config-feedforward')
 
-        winner = Jeu.entrainement.run(chemin_config, nbrGen, self.var_entrainement_report, self.master, self.var_checkbox_calculs_paralleles.get())
+        self.thread_entrainement = threading.Thread(target = Jeu.entrainement.run, args= (chemin_config,
+                                                                                          nbrGen,
+                                                                                          self.var_entrainement_report,
+                                                                                          self.var_checkbox_calculs_paralleles,
+                                                                                          self.entrainement_fini))
+        self.thread_entrainement.start()
+        self.bouton_simulation.config(state="disabled")
+        self.bouton_quitter.config(state="disabled")
+
+
+    def entrainement_fini(self, winner):
+
+        txt = self.var_entrainement_report.get()
+        txt += "\nEntraînement fini\n"
+        self.var_entrainement_report.set(txt)
+
+        dossier_local = os.path.dirname(__file__)
 
         dossier = os.path.join(dossier_local,'Genomes')
         nom_fichier = 'winner-feedforward({})_'.format(winner.fitness) + strftime("%Y-%m-%d %H_%M_%S", gmtime()) + '.genome'
@@ -166,10 +182,17 @@ class Demo1:
 
         with open(chemin, 'wb') as f:
             pickle.dump(winner, f)
-            print("Gagnant sauvegardé sous : ")
-            print(chemin)
+            txt = self.var_entrainement_report.get()
+            txt += "\nGagnant sauvegardé sous : \n{0}\n".format(os.path.join('Genome',nom_fichier))
+            self.var_entrainement_report.set(txt)
 
         self.charger_genome_depuis_fichier(chemin)
+
+        self.bouton_simulation.config(state="normal")
+        self.bouton_quitter.config(state="normal")
+
+        interface = 'visuelle' if self.var_checkbox_ia_visuelle.get() else 'console'
+        chemin_config = os.path.join(dossier_local, 'config-feedforward')
 
         if interface == "console":
             puzzle = Jeu.puzzleIA.IAGameGrid()

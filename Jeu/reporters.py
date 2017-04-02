@@ -4,34 +4,25 @@ import time
 from neat.reporting import BaseReporter
 from neat.math_util import mean, stdev
 from neat.six_util import itervalues, iterkeys
-
-import tkinter as tk
-
     
 
 
 class VarReporter(BaseReporter):
-    def __init__(self, show_species_detail, variable, root):
+    def __init__(self, show_species_detail, variable):
         self.var = variable
         self.texte = ""
-        self.root = root
         self.show_species_detail = show_species_detail
         self.generation = None
         self.generation_start_time = None
         self.generation_times = []
         self.num_extinctions = 0
 
-    def update_var_job(self):
-        self.var.set(self.texte)
-
     def update_var(self):
-        self.root.after(0, self.update_var_job)
-        
+        self.var.set(self.texte)
 
     def start_generation(self, generation):
         self.generation = generation
-        self.texte = '\n ****** Running generation {0} ****** \n'.format(generation)
-        self.update_var()
+        self.texte = ' ****** Running generation {0} ****** \n'.format(generation)
         self.generation_start_time = time.time()
 
     def end_generation(self, config, population, species_set):
@@ -52,7 +43,7 @@ class VarReporter(BaseReporter):
                 st = self.generation - s.last_improved
                 self.texte += "  {: >4}  {: >3}  {: >4}  {: >7}  {: >7}  {: >4}\n".format(sid, a, n, f, af, st)
         else:
-           self.texte += 'Population of {0:d} members in {1:d} species\n'.format(ng, ns)
+            self.texte += 'Population of {0:d} members in {1:d} species\n'.format(ng, ns)
 
         elapsed = time.time() - self.generation_start_time
         self.generation_times.append(elapsed)
@@ -74,7 +65,6 @@ class VarReporter(BaseReporter):
         self.texte += 'Best fitness: {0:3.5f} - size: {1!r} - species {2} - id {3}\n'.format(best_genome.fitness, best_genome.size(),
                                                                                    best_species_id, best_genome.key)
         self.update_var()
-        
 
     def complete_extinction(self):
         self.num_extinctions += 1
@@ -92,4 +82,5 @@ class VarReporter(BaseReporter):
             self.update_var()
 
     def info(self, msg):
-        print(msg)
+        #print(msg)
+        pass

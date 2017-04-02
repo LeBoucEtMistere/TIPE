@@ -51,7 +51,6 @@ def faire_jouer_IA(genome, config_path, puzzle, interface):
             if i > 3:
                 # aucun mouvement n'est légal
                 continuer = False
-                print("Partie Finie")
                 break
 
             if interface == 'visuelle':
