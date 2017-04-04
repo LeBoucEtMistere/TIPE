@@ -176,7 +176,7 @@ class Demo1:
     def entrainer_IA(self):
         
         nbrGen = sd.askinteger('Nombre de générations', 'Combien de générations ?')
-
+        
         dossier_local = os.path.dirname(__file__)
         chemin_config = os.path.join(dossier_local, 'config-feedforward')
 
@@ -187,6 +187,7 @@ class Demo1:
                                                                                           self.entrainement_fini))
         self.thread_entrainement.start()
         self.var_entrainement_etat.set("Entraînement en cours")
+        self.var_entrainement_msg.set("")
         self.bouton_simulation.config(state="disabled")
         self.bouton_quitter.config(state="disabled")
 
