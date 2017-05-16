@@ -8,7 +8,7 @@ from Jeu.reporters import VarReporter
 
 def eval_fitness_n_fois(genome,config):
     stats = []
-    for i in range(4):
+    for i in range(1):
         stats.append(eval_fitness_simple(genome,config))
     return sum(stats)/len(stats)
 
@@ -135,7 +135,7 @@ def eval_fitness_simple(genome, config):
 
         if b == 0 or b == 1: break
 
-    return vides + 5 * bonus_bords + 0.075 * malus_monotone + 15 * bonus_adjacents
+    return vides + 7 * bonus_bords + 0.080 * malus_monotone + 15 * bonus_adjacents
 
 def eval_fitness(genomes, config):
     for genome_id, genome in genomes:
@@ -157,7 +157,7 @@ def run(config_path, nbrGen, parallele, callback, root, queue):
     p.add_reporter(VarReporter(False, root, queue))
     #stats = neat.StatisticsReporter()
     #p.add_reporter(stats)
-    p.add_reporter(neat.Checkpointer(1000))
+    #p.add_reporter(neat.Checkpointer(1000))
 
     winner = None
 
