@@ -5,6 +5,12 @@ GRID_LEN = 4
 
 
 class IAGameGrid:
+    def __getstate__(self):
+        return self.__dict__
+
+    def __setstate__(self, d):
+        self.__dict__.update(d)
+
     def __init__(self):
 
         self.commands = {'up': up, 'down': down, 'left': left, 'right': right}

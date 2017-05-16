@@ -25,6 +25,12 @@ from platform import system as platform
 import neat
 
 class Demo1:
+    def __getstate__(self):
+        return self.__dict__
+
+    def __setstate__(self, d):
+        self.__dict__.update(d)
+
     def __init__(self, master):
 
         ## UI RELATED ##
@@ -166,11 +172,12 @@ class Demo1:
         config_path = os.path.join(local_dir, 'config-feedforward')
 
 
-        Jeu.IA.faire_jouer_IA(self.genome_charge, config_path, puzzle, interface)
+        stats = Jeu.IA.faire_jouer_IA(self.genome_charge, config_path, puzzle, interface)
 
         if interface == "console":
             print(array(puzzle.matrix))
             print("Score pour cette grille : {}".format(puzzle.compter_somme()))
+            print("Stats : cases vides : {}, bonus bords : {}, malus monotonie : {}, bonus adjaceant : {}".format(stats[0], stats[1], stats[2], stats[3]))
 
 
     def entrainer_IA(self):
@@ -215,9 +222,10 @@ class Demo1:
 
         if interface == "console":
             puzzle = Jeu.puzzleIA.IAGameGrid()
-            Jeu.IA.faire_jouer_IA(winner, chemin_config, puzzle, interface)
+            stats = Jeu.IA.faire_jouer_IA(winner, chemin_config, puzzle, interface)
             print(array(puzzle.matrix))
             print("Score pour cette grille : {}".format(puzzle.compter_somme()))
+            print("Stats : cases vides : {}, bonus bords : {}, malus monotonie : {}, bonus adjaceant : {}".format(stats[0], stats[1], stats[2], stats[3]))
         elif interface == 'visuelle':
             self.fenetre = tk.Toplevel(self.master)
             puzzle = pzl.GraphicGameGrid(self.fenetre)

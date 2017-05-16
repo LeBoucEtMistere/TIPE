@@ -7,6 +7,12 @@ from neat.six_util import itervalues, iterkeys
 
 
 class VarReporter(BaseReporter):
+    def __getstate__(self):
+        return self.__dict__
+
+    def __setstate__(self, d):
+        self.__dict__.update(d)
+
     def __init__(self, show_species_detail, variables):
 
         self.pre_var, self.post_var, self.end_var = variables

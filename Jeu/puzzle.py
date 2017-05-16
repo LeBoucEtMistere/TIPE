@@ -27,6 +27,12 @@ KEY_RIGHT = "'d'"
 
 
 class GraphicGameGrid:
+    def __getstate__(self):
+        return self.__dict__
+
+    def __setstate__(self, d):
+        self.__dict__.update(d)
+
     def __init__(self, master):
 
         self.master = master
