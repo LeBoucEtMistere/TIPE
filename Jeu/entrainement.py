@@ -142,7 +142,7 @@ def eval_fitness(genomes, config):
         genome.fitness = eval_fitness_simple(genome, config)
 
 
-def run(config_path, nbrGen, report_vars, parallele, callback):
+def run(config_path, nbrGen, parallele, callback, root, queue):
 
 
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -154,7 +154,7 @@ def run(config_path, nbrGen, report_vars, parallele, callback):
 
     # Add a stdout reporter to show progress in the terminal.
     #p.add_reporter(neat.StdOutReporter(True))
-    p.add_reporter(VarReporter(False, report_vars))
+    p.add_reporter(VarReporter(False, root, queue))
     #stats = neat.StatisticsReporter()
     #p.add_reporter(stats)
     p.add_reporter(neat.Checkpointer(1000))

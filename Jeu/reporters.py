@@ -7,15 +7,9 @@ from neat.six_util import itervalues, iterkeys
 
 
 class VarReporter(BaseReporter):
-    def __getstate__(self):
-        return self.__dict__
 
-    def __setstate__(self, d):
-        self.__dict__.update(d)
+    def __init__(self, show_species_detail, root, queue):
 
-    def __init__(self, show_species_detail, variables):
-
-        self.pre_var, self.post_var, self.end_var = variables
         self.pre_texte, self.post_texte, self.end_texte = "", "", ""
 
         self.show_species_detail = show_species_detail
@@ -24,12 +18,19 @@ class VarReporter(BaseReporter):
         self.generation_times = []
         self.num_extinctions = 0
 
+        self.queue = queue
+        self.root = root
+
     def start_generation(self, generation):
         self.generation = generation
         self.pre_texte = ' ****** Running generation {0} ****** '.format(generation)
         self.generation_start_time = time.time()
 
-        self.pre_var.set(self.pre_texte)
+        try:
+            self.queue.put(self.pre_texte)
+            self.root.event_generate('<<PreTextChanged>>', when='tail')
+        except:
+            print('error')
 
     def end_generation(self, config, population, species_set):
         ng = len(population)
@@ -61,7 +62,11 @@ class VarReporter(BaseReporter):
         else:
             self.end_texte += "Generation time: {0:.3f} sec".format(elapsed)
 
-        self.end_var.set(self.end_texte)
+        try:
+            self.queue.put(self.end_texte)
+            self.root.event_generate('<<EndTextChanged>>', when='tail')
+        except:
+            print('error')
 
     def post_evaluate(self, config, population, species, best_genome):
         fitnesses = [c.fitness for c in itervalues(population)]
@@ -71,7 +76,11 @@ class VarReporter(BaseReporter):
         self.post_texte = 'Population\'s average fitness: {0:3.5f} stdev: {1:3.5f}\n'.format(fit_mean, fit_std)
         self.post_texte += 'Best fitness: {0:3.5f} - size: {1!r} - species {2} - id {3}\n'.format(best_genome.fitness, best_genome.size(),
                                                                                    best_species_id, best_genome.key)
-        self.post_var.set(self.post_texte)
+        try:
+            self.queue.put(self.post_texte)
+            self.root.event_generate('<<PostTextChanged>>', when='tail')
+        except:
+            print('error')
 
     def complete_extinction(self):
         self.num_extinctions += 1

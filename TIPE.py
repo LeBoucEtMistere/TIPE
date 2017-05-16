@@ -130,7 +130,21 @@ class Demo1:
 
         self.thread_entrainement = None
 
+        self.textQueue = queue.Queue()
 
+        self.master.bind('<<PreTextChanged>>', self.maj_text_pre)
+        self.master.bind('<<PostTextChanged>>', self.maj_text_post)
+        self.master.bind('<<EndTextChanged>>', self.maj_text_end)
+
+
+    def maj_text_pre(self, event):
+        self.var_entrainement_pre.set(self.textQueue.get())
+
+    def maj_text_post(self, event):
+        self.var_entrainement_post.set(self.textQueue.get())
+
+    def maj_text_end(self, event):
+        self.var_entrainement_end.set(self.textQueue.get())
 
     def demande_charger_genome(self):
         filename = fd.askopenfilename(**self.file_opt)
@@ -189,9 +203,10 @@ class Demo1:
 
         self.thread_entrainement = threading.Thread(target = Jeu.entrainement.run, args= (chemin_config,
                                                                                           nbrGen,
-                                                                                          [self.var_entrainement_pre, self.var_entrainement_post, self.var_entrainement_end],
                                                                                           self.var_checkbox_calculs_paralleles,
-                                                                                          self.entrainement_fini))
+                                                                                          self.entrainement_fini,
+                                                                                          self.master,
+                                                                                          self.textQueue))
         self.thread_entrainement.start()
         self.var_entrainement_etat.set("Entraînement en cours")
         self.bouton_simulation.config(state="disabled")
