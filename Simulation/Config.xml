@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<data>
+    <config_reseau_initiale>
+        <nbr_entrees>2</nbr_entrees>
+        <nbr_sorties>1</nbr_sorties>
+        <nbr_caches>0</nbr_caches>
+        <type_connexion>
+            <totale/>
+        </type_connexion>
+        <distribution_poids>
+            <gauss sigma="0.6"/>
+        </distribution_poids>
+    </config_reseau_initiale>
+    <fonctions_activation>
+        <sigmoid/>
+    </fonctions_activation>
+
+    <parametres_genetiques>
+        <prob_muter_poids>0.8</prob_muter_poids>
+        <prob_changer_poids>0.1</prob_changer_poids>
+        <puissance_mutation_poids>0.5</puissance_mutation_poids>
+        <poids_min>-30</poids_min>
+        <poids_max>30</poids_max>
+        <prob_changer_etat_connexion>0.01</prob_changer_etat_connexion>
+        <prob_muter_biais>0.5</prob_muter_biais>
+        <puissance_mutation_biais>0.7</puissance_mutation_biais>
+        <prob_muter_facteur>0.0</prob_muter_facteur>
+        <puissance_mutation_facteur>0.0</puissance_mutation_facteur>
+        <prob_muter_activation>0.0</prob_muter_activation>
+        <prob_ajout_noeud>0.2</prob_ajout_noeud>
+        <prob_enlever_noeud>0.2</prob_enlever_noeud>
+        <prob_ajout_connexion>0.5</prob_ajout_connexion>
+        <prob_enlever_connexion>0.5</prob_enlever_connexion>
+    </parametres_genetiques>
+
+    <compatibilite_genotypes>
+        <seuil_compatibilite>2</seuil_compatibilite>
+        <coeff_poids>0.5</coeff_poids>
+        <coeff_exces>1</coeff_exces>
+        <coeff_disjoints>1</coeff_disjoints>
+    </compatibilite_genotypes>
+</data>
