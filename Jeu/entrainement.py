@@ -8,7 +8,7 @@ from Jeu.reporters import VarReporter
 
 def eval_fitness_n_fois(genome,config):
     stats = []
-    for i in range(1):
+    for i in range(4):
         stats.append(eval_fitness_simple(genome,config))
     return sum(stats)/len(stats)
 
@@ -135,14 +135,16 @@ def eval_fitness_simple(genome, config):
 
         if b == 0 or b == 1: break
 
-    return vides + 7 * bonus_bords + 0.080 * malus_monotone + 15 * bonus_adjacents
+    #On retourne une somme pondérée des heuristiques pour servir de fitness
+
+    return 3 * vides + 7 * bonus_bords + 0.080 * malus_monotone + 16 * bonus_adjacents
 
 def eval_fitness(genomes, config):
     for genome_id, genome in genomes:
         genome.fitness = eval_fitness_simple(genome, config)
 
 
-def run(config_path, nbrGen, parallele, callback, root, queue):
+def run(config_path, nbrGen, parallele, callback, root, queue, stats):
 
 
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -154,7 +156,7 @@ def run(config_path, nbrGen, parallele, callback, root, queue):
 
     # Add a stdout reporter to show progress in the terminal.
     #p.add_reporter(neat.StdOutReporter(True))
-    p.add_reporter(VarReporter(False, root, queue))
+    p.add_reporter(VarReporter(False, root, queue, stats))
     #stats = neat.StatisticsReporter()
     #p.add_reporter(stats)
     #p.add_reporter(neat.Checkpointer(1000))

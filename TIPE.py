@@ -1,4 +1,5 @@
-# Ce fichier gere le programme de simulation dans son ensemble, en lancant le jeu et en controlant l'AI
+# Ce fichier gere le programme de simulation dans son ensemble, en lancant le jeu et en gérant tout ce qui
+# est relatif a l'interface graphique
 
 import tkinter as tk
 from tkinter import font
@@ -12,6 +13,7 @@ import Jeu.puzzle as pzl
 import Jeu.puzzleIA as iapzl
 
 from numpy import array
+from math import log2
 
 from time import gmtime, strftime
 
@@ -20,6 +22,7 @@ import Jeu.IA
 
 import os
 import pickle
+import csv
 from platform import system as platform
 
 import neat
@@ -28,7 +31,7 @@ class Demo1:
 
     def __init__(self, master):
 
-        ## UI RELATED ##
+        ## UI ##
 
         self.file_opt = options = {}
         options['parent'] = master
@@ -76,6 +79,9 @@ class Demo1:
         self.bouton_jouer_2048_IA = tk.Button(l2, text='Faire jouer l\'IA au 2048', width=20, command=self.IA_jouer_2048)
         self.bouton_jouer_2048_IA.pack()
 
+        self.bouton_gen_stats = tk.Button(l2, text='Générer des statistiques', width=20, command=self.gen_stats)
+        self.bouton_gen_stats.pack()
+
         self.var_checkbox_ia_visuelle = tk.IntVar()
         self.checkbox_ia_visuelle = tk.Checkbutton(l2, text="Jouer en mode visuel", variable=self.var_checkbox_ia_visuelle)
         self.checkbox_ia_visuelle.pack()
@@ -119,13 +125,13 @@ class Demo1:
 
 
 
-        ## DATA RELATED ##
+        ## DONNEES ##
 
         self.genome_charge = None
 
         self.thread_entrainement = None
 
-        self.textQueue = queue.Queue()
+        self.queue_texte = queue.Queue()
 
         self.master.bind('<<PreTextChanged>>', self.maj_text_pre)
         self.master.bind('<<PostTextChanged>>', self.maj_text_post)
@@ -133,13 +139,13 @@ class Demo1:
 
 
     def maj_text_pre(self, event):
-        self.var_entrainement_pre.set(self.textQueue.get())
+        self.var_entrainement_pre.set(self.queue_texte.get())
 
     def maj_text_post(self, event):
-        self.var_entrainement_post.set(self.textQueue.get())
+        self.var_entrainement_post.set(self.queue_texte.get())
 
     def maj_text_end(self, event):
-        self.var_entrainement_end.set(self.textQueue.get())
+        self.var_entrainement_end.set(self.queue_texte.get())
 
     def demande_charger_genome(self):
         filename = fd.askopenfilename(**self.file_opt)
@@ -188,8 +194,48 @@ class Demo1:
             print("Score pour cette grille : {}".format(puzzle.compter_somme()))
             print("Stats : cases vides : {}, bonus bords : {}, malus monotonie : {}, bonus adjaceant : {}".format(stats[0], stats[1], stats[2], stats[3]))
 
+    def gen_stats(self):
+
+        if self.genome_charge == None:
+            self.demande_charger_genome()
+            if self.genome_charge == None :
+                raise Exception("Impossible de charger un genome")
+
+        nbrTest = sd.askinteger('Nombre de parties à jouer', 'Nombre de parties à jouer ?')
+
+        local_dir = os.path.dirname(__file__)
+        config_path = os.path.join(local_dir, 'config-feedforward')
+
+        tuiles = [0]*7
+        temps = []
+        scores = []
+
+        for i in range(nbrTest):
+
+            puzzle = iapzl.IAGameGrid()
+            temps.append(Jeu.IA.faire_jouer_IA_perf(self.genome_charge, config_path, puzzle))
+            tuile_max = int(log2(max(array(puzzle.matrix).flat)))
+            if tuile_max >= 8: #Si on a au moins un 256
+                for i in range(0,tuile_max-7): #on ajoute 1 à toutes les tuiles en dessous et celle là
+                    tuiles[i] += 1
+            scores.append(puzzle.compter_somme())
+
+        pourcentages = [x/nbrTest*100 for x in tuiles]
+        temps_moy = sum(temps)/len(temps)
+
+        #affichage
+        print("Sur {} parties, on obtient les statistiques suivantes :".format(nbrTest))
+        print("temps moyen par coup : {}s".format(temps_moy))
+        print("score moyen : {}, score max : {}, score min : {}".format(sum(scores)/len(scores),max(scores), min(scores)))
+        print("nombre moyen de coups par seconde : {} cps".format(1/temps_moy))
+        print("pourcentage des parties où la tuile a été obtenue au moins une fois :")
+        for i in range(len(pourcentages)):
+            print("     {} : {}%".format(2**(i+8),pourcentages[i]))
+
 
     def entrainer_IA(self):
+
+        self.stats=[[],[],[]]
         
         nbrGen = sd.askinteger('Nombre de générations', 'Combien de générations ?')
 
@@ -201,7 +247,8 @@ class Demo1:
                                                                                           self.var_checkbox_calculs_paralleles,
                                                                                           self.entrainement_fini,
                                                                                           self.master,
-                                                                                          self.textQueue))
+                                                                                          self.queue_texte,
+                                                                                          self.stats))
         self.thread_entrainement.start()
         self.var_entrainement_etat.set("Entraînement en cours")
         self.bouton_simulation.config(state="disabled")
@@ -230,12 +277,22 @@ class Demo1:
         interface = 'visuelle' if self.var_checkbox_ia_visuelle.get() else 'console'
         chemin_config = os.path.join(dossier_local, 'config-feedforward')
 
+        stats_path = os.path.join(dossier_local,'stats', 'entrainement_stats'+strftime("%Y-%m-%d %H_%M_%S", gmtime())+'.csv')
+
+        with open(stats_path, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow( ('Génération','Fitness Moyenne','Fitness Maximale',"Nombre d'espèces") )
+            for i in range(len(self.stats[0])):
+                writer.writerow([i,self.stats[0][i],self.stats[1][i],self.stats[2][i]])
+            print("Statistiques d'entrainement enregistrées sous : " + stats_path)
+
+
         if interface == "console":
             puzzle = Jeu.puzzleIA.IAGameGrid()
             stats = Jeu.IA.faire_jouer_IA(winner, chemin_config, puzzle, interface)
             print(array(puzzle.matrix))
             print("Score pour cette grille : {}".format(puzzle.compter_somme()))
-            print("Stats : cases vides : {}, bonus bords : {}, malus monotonie : {}, bonus adjaceant : {}".format(stats[0], stats[1], stats[2], stats[3]))
+            print("Stats : cases vides : {}, bonus bords : {}, malus monotonie : {}, bonus adjaceant : {}".format(*stats))
         elif interface == 'visuelle':
             self.fenetre = tk.Toplevel(self.master)
             puzzle = pzl.GraphicGameGrid(self.fenetre)
@@ -246,11 +303,11 @@ class Demo1:
         self.master.destroy()
 
 def main():
-    root = tk.Tk()
-    app = Demo1(root)
-    if platform() == 'Darwin':  # How Mac OS X is identified by Python
+    racine = tk.Tk()
+    app = Demo1(racine)
+    if platform() == 'Darwin':  # SI on lance sur Mac OS, il faut forcer le focus
         os.system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "Python" to true' ''')
-    root.mainloop()
+    racine.mainloop()
 
 if __name__ == '__main__':
     main()
